@@ -1,5 +1,11 @@
 import { z } from 'zod';
 import type { AssetDefinition } from '../../assets/manifest/framework';
+import {
+  atlasManifestSchema,
+  type AtlasDefinition,
+  type AtlasFrameAsset,
+  type AtlasManifest,
+} from './atlas';
 const overrideSchema = z.record(
   z.object({
     path: z.string().startsWith('/assets/'),
@@ -11,6 +17,57 @@ export class AssetManager {
   private registry = new Map<string, AssetDefinition>();
   private cache = new Map<string, Promise<string>>();
   private theme = 'default';
+  private atlases = new Map<string, AtlasDefinition>();
+  private frames = new Map<string, AtlasFrameAsset>();
+  private atlasCache = new Map<string, Promise<AtlasManifest>>();
+  registerAtlases(atlases: AtlasDefinition[], frames: AtlasFrameAsset[]) {
+    if (
+      new Set(atlases.map((a) => a.id)).size !== atlases.length ||
+      atlases.some((a) => this.atlases.has(a.id)) ||
+      new Set(frames.map((f) => f.frameKey)).size !== frames.length ||
+      frames.some(
+        (f) =>
+          this.frames.has(f.frameKey) ||
+          (!atlases.some((a) => a.id === f.atlasId) && !this.atlases.has(f.atlasId)),
+      )
+    )
+      throw new Error('Invalid atlas registration');
+    atlases.forEach((a) => this.atlases.set(a.id, a));
+    frames.forEach((f) => this.frames.set(f.frameKey, f));
+  }
+  frame(key: string) {
+    const frame = this.frames.get(key);
+    if (!frame) throw new Error('Unknown atlas frame: ' + key);
+    return frame;
+  }
+  async loadAtlas(id: string): Promise<AtlasManifest> {
+    const cached = this.atlasCache.get(id);
+    if (cached) return cached;
+    const definition = this.atlases.get(id);
+    if (!definition) throw new Error('Unknown atlas: ' + id);
+    const pending = (async () => {
+      const response = await fetch(definition.manifestPath);
+      if (!response.ok) throw new Error('Atlas manifest unavailable: ' + id);
+      const manifest = atlasManifestSchema.parse(await response.json());
+      if (manifest.id !== id) throw new Error('Atlas ID mismatch');
+      for (const frame of this.frames.values())
+        if (frame.atlasId === id && !manifest.frames[frame.frameKey])
+          throw new Error('Missing atlas frame: ' + frame.frameKey);
+      await new Promise<void>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () =>
+          image.naturalWidth === manifest.width && image.naturalHeight === manifest.height
+            ? resolve()
+            : reject(new Error('Atlas image dimensions mismatch: ' + id));
+        image.onerror = () => reject(new Error('Atlas image unavailable: ' + id));
+        image.src = manifest.image;
+      });
+      return manifest;
+    })();
+    this.atlasCache.set(id, pending);
+    pending.catch(() => this.atlasCache.delete(id));
+    return pending;
+  }
   register(definitions: AssetDefinition[]) {
     for (const asset of definitions) {
       if (this.registry.has(asset.id)) throw new Error('Duplicate asset: ' + asset.id);

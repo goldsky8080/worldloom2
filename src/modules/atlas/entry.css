@@ -1,0 +1,33 @@
+.atlas-entry-link {
+  position: absolute;
+  right: 24px;
+  top: 86px;
+  z-index: 2;
+  color: #d8c597;
+  background: #173336eb;
+  border: 1px solid #817659;
+  border-radius: 5px;
+  padding: 10px 14px;
+  text-decoration: none;
+  font-size: 12px;
+  box-shadow: 0 5px 15px #11242760;
+}
+.atlas-login-link {
+  display: block;
+  text-align: center;
+  color: #c6b881;
+  text-decoration: none;
+  font-size: 12px;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #716b4b;
+  border-radius: 5px;
+}
+@media (max-width: 700px) {
+  .atlas-entry-link {
+    right: 12px;
+    top: 69px;
+    font-size: 10px;
+    padding: 7px 10px;
+  }
+}

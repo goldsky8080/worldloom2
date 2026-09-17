@@ -217,5 +217,6 @@
   "command.busy": "別の行動が進行中です。",
   "mining.tooFar": "鉱脈から離れすぎています。",
   "mining.invalidNode": "この鉱脈は採掘できません。",
-  "mining.alreadyActive": "すでに採掘中です。"
+  "mining.alreadyActive": "すでに採掘中です。",
+  "menu.atlas": "ワールドアトラス"
 }

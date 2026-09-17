@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
+  cacheDir: process.env.WORLDLOOM_VITE_CACHE_DIR ?? '.cache/vite-dev',
   server: {
     port: 5190,
     strictPort: true,

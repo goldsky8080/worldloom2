@@ -60,3 +60,9 @@ mode는 floating / docked / fullscreen입니다. 모바일에서는 공통 CSS�
 ## 이벤트
 
 Backend 이벤트는 GameRuntime에서 처리하고 UiEventBus의 panel.open / entity.selected 등과 구분합니다. 메뉴·패널 내부에서 직접 fetch나 WebSocket을 생성하지 않습니다. eventHandlers 메타데이터는 registerModules에서 Runtime.onGameEvent로 자동 구독합니다. 추가 구독도 동일 API의 반환된 unsubscribe 함수를 사용할 수 있습니다.
+
+## AtlasPreview 모듈
+
+AtlasModule은 /atlas 읽기용 공개 경로와 월드 메뉴 항목을 등록합니다. 실제 플레이 세션의 GameRuntime을 시작하지 않으며 Region/Territory/House/Site의 시각적 표현을 검증합니다. 공통 AssetManager에 실제 아틀라스 등록과 로더를 추가했습니다. 기존 /game의 명령·이벤트·Cache·이동·채광 모델은 유지합니다.
+
+샘플 데이터와 표시용 장면, WorldObjectRegistry, Pixi 장면, React 정보 패널은 src/modules/atlas/에서 관리합니다. 지연 로드로 기존 게임 진입 시 샘플 화면 코드·아틀라스 로드를 피합니다. 서버 세계로 통합하는 후속 범위는 [ATLAS_PREVIEW.md](ATLAS_PREVIEW.md)에 명시했습니다.

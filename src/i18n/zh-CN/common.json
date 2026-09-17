@@ -217,5 +217,6 @@
   "command.busy": "另一个行动正在进行。",
   "mining.tooFar": "距离矿脉太远。",
   "mining.invalidNode": "无法采集此矿脉。",
-  "mining.alreadyActive": "已经在采矿。"
+  "mining.alreadyActive": "已经在采矿。",
+  "menu.atlas": "世界图集"
 }

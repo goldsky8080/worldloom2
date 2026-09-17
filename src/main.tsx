@@ -6,6 +6,7 @@ import { App } from './app/router/App';
 import { registerModules } from './modules/register';
 import './ui/theme/game.css';
 import './ui/theme/responsive.css';
+import './modules/atlas/entry.css';
 applyTheme();
 registerModules();
 createRoot(document.getElementById('root')!).render(

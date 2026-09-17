@@ -27,6 +27,7 @@ export default defineConfig({
     : {
         command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5187 --strictPort',
         url: 'http://127.0.0.1:5187',
+        env: { WORLDLOOM_VITE_CACHE_DIR: '.cache/vite-playwright' },
         reuseExistingServer: false,
         timeout: 30000,
       },

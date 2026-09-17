@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { HUD } from '../HUD/HUD';
 import { MainMenu, SubMenu } from '../MainMenu/MainMenu';
 import { ChatDock } from '../ChatDock/ChatDock';
@@ -47,6 +47,9 @@ export function GameShell() {
           <span className="eyebrow">{t('world.subtitle')}</span>
           <h1>{t('world.region')}</h1>
         </div>
+        <Link className="atlas-entry-link" to="/atlas">
+          {t('menu.atlas')} ↗
+        </Link>
         <MainMenu />
         <SubMenu />
         <ChatDock />

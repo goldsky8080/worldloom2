@@ -217,5 +217,6 @@
   "command.busy": "Một hoạt động khác đang diễn ra.",
   "mining.tooFar": "Bạn ở quá xa mạch quặng.",
   "mining.invalidNode": "Không thể khai thác điểm này.",
-  "mining.alreadyActive": "Đang có hoạt động khai thác."
+  "mining.alreadyActive": "Đang có hoạt động khai thác.",
+  "menu.atlas": "Atlas thế giới"
 }
