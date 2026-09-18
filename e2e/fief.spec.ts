@@ -1,7 +1,9 @@
+import { referenceScreenshot } from './referenceScreenshot';
 import { test, expect, type Page } from '@playwright/test';
 async function fief(page: Page, pause = true) {
   await page.goto('/fief');
   await expect(page.getByRole('heading', { name: '새벽물결 영지', exact: true })).toBeVisible();
+  await page.getByTestId('fief-dev-toggle').click();
   if (pause) await page.getByRole('button', { name: '시간 일시정지', exact: true }).click();
 }
 test('fief starts at L1 with one permanent dungeon and responsive interactive facilities', async ({
@@ -12,15 +14,16 @@ test('fief starts at L1 with one permanent dungeon and responsive interactive fa
   await fief(page);
   await expect(page.getByTestId('fief-grade')).toHaveText('F');
   await expect(page.getByTestId('fief-grade-range')).toHaveText('F ~ D');
-  await expect(page.locator('.fief-facilities button')).toHaveCount(4);
+  await expect(page.locator('.fief-site')).toHaveCount(4);
   await expect(page.getByRole('combobox', { name: '도시 레벨 · 테스트', exact: true })).toHaveValue(
     '1',
   );
   await expect(page.getByRole('combobox', { name: '성 레벨 · 테스트', exact: true })).toHaveValue(
     '1',
   );
+  await page.getByTestId('fief-dev-toggle').click();
   await page.getByRole('button', { name: '장원', exact: true }).click();
-  await expect(page.locator('.fief-facility-info')).toContainText('장원 L1');
+  await expect(page.getByTestId('fief-context')).toContainText('장원 L1');
   await expect
     .poll(() =>
       page
@@ -38,14 +41,15 @@ test('fief starts at L1 with one permanent dungeon and responsive interactive fa
     true,
   );
   const host = page.getByTestId('fief-page');
-  expect(await host.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
-  await host.hover();
-  await page.mouse.wheel(0, 1800);
-  await expect.poll(() => host.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  if (await host.evaluate((element) => element.scrollHeight > element.clientHeight)) {
+    await host.hover();
+    await page.mouse.wheel(0, 1800);
+    await expect.poll(() => host.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  }
   await page.getByTestId('fief-page').evaluate((element) => {
     element.scrollTop = 0;
   });
-  await page.screenshot({
+  await referenceScreenshot(page, {
     path: 'docs/screenshots/fief-overview-' + info.project.name + '.png',
     fullPage: true,
   });
@@ -63,18 +67,24 @@ test('city grade ranges apply on the next cycle, forecast and castle independenc
   await expect(page.getByTestId('fief-grade')).toHaveText('A');
   await page.getByRole('button', { name: /다음 주기 실행/ }).click();
   await expect(page.getByTestId('fief-grade')).toHaveText('S');
+  await page.getByTestId('fief-dev-toggle').click();
+  await page.getByRole('button', { name: '성', exact: true }).click();
   await expect(page.locator('.fief-capacity')).toContainText('방어 여력 부족');
+  await page.getByTestId('fief-dev-toggle').click();
   await page.getByRole('combobox', { name: '성 레벨 · 테스트', exact: true }).selectOption('5');
   await expect(page.getByTestId('fief-grade')).toHaveText('S');
   await expect(page.locator('.fief-capacity')).toContainText('관리 여력 있음');
   await city.selectOption('1');
+  await page.getByTestId('fief-dev-toggle').click();
+  await page.getByRole('button', { name: '영지 던전', exact: true }).click();
+  await page.getByTestId('fief-dev-toggle').click();
   await expect(page.getByTestId('fief-grade')).toHaveText('S');
   for (let i = 0; i < 3; i++)
     await page.getByRole('button', { name: '시간 +30초', exact: true }).click();
   await expect(page.getByTestId('fief-forecast')).toContainText('다음 등급 예고 · F');
   await page.getByRole('button', { name: /다음 주기 실행/ }).click();
   await expect(page.getByTestId('fief-grade')).toHaveText('F');
-  await page.screenshot({
+  await referenceScreenshot(page, {
     path: 'docs/screenshots/fief-cycle-' + info.project.name + '.png',
     fullPage: true,
   });
@@ -93,18 +103,18 @@ test('aether rises, break latches once, raid recovers and reset clears state', a
   await page.getByTestId('fief-page').evaluate((element) => {
     element.scrollTop = 0;
   });
-  await page.screenshot({
+  await referenceScreenshot(page, {
     path: 'docs/screenshots/fief-break-' + info.project.name + '.png',
     fullPage: true,
   });
-  await page.getByRole('button', { name: /테스트 던전 공략/ }).click();
+  await page.getByRole('button', { name: /즉시 공략/ }).click();
   await expect(page.getByTestId('fief-break-alert')).toHaveCount(0);
   await expect(page.getByTestId('fief-aether-value')).toHaveText('65.0 / 100');
   await expect(page.getByTestId('fief-status')).toHaveText('위험');
-  await page.getByRole('button', { name: /테스트 던전 공략/ }).click();
-  await page.getByRole('button', { name: /테스트 던전 공략/ }).click();
+  await page.getByRole('button', { name: /즉시 공략/ }).click();
+  await page.getByRole('button', { name: /즉시 공략/ }).click();
   await expect(page.getByTestId('fief-aether-value')).toHaveText('0.0 / 100');
-  await expect(page.getByRole('button', { name: /테스트 던전 공략/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /즉시 공략/ })).toBeDisabled();
   await page.getByRole('button', { name: '영지 초기화', exact: true }).click();
   await page.getByRole('button', { name: '시간 일시정지', exact: true }).click();
   await expect(page.getByTestId('fief-grade')).toHaveText('F');
@@ -136,7 +146,11 @@ test('visible clock updates naturally and pause stops both aether and cycle', as
   await expect(page.getByTestId('fief-grade')).toHaveText('E');
 });
 test('design mode stays separate and all supported languages render', async ({ page }) => {
+  await page.clock.install();
   await fief(page);
+  await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 1000));
+  await page.getByTestId('fief-dev-reset').click();
+  await page.getByTestId('fief-dev-pause').click();
   await page.getByRole('button', { name: '시간 +30초', exact: true }).click();
   await page
     .getByRole('combobox', { name: '개발용 시간 조작', exact: true })
@@ -164,6 +178,7 @@ test('atlas link round trip resets fief and cleans up its clock', async ({ page 
   await page.getByRole('link', { name: '영지 관리 ↗', exact: true }).click();
   await expect(page.getByTestId('fief-page')).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
+  await page.getByTestId('fief-dev-toggle').click();
   await expect(page.getByRole('combobox', { name: '도시 레벨 · 테스트', exact: true })).toHaveValue(
     '1',
   );

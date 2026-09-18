@@ -832,3 +832,752 @@
     transition: none !important;
   }
 }
+
+/* v0.2: map-led gameplay, facility context and an opt-in developer panel. */
+.fief-gameplay .fief-content {
+  max-width: 1480px;
+  padding: 22px 28px 28px;
+}
+.fief-gameplay .fief-header {
+  padding: 16px 28px;
+  min-height: 86px;
+}
+.fief-gameplay .fief-header nav {
+  flex: none;
+  gap: 16px;
+}
+.fief-dev-toggle {
+  background: none;
+  border: 1px solid #73816360;
+  border-radius: 3px;
+  padding: 7px 9px;
+  color: #899b7d;
+  font-size: 9px !important;
+  letter-spacing: 0.1em;
+}
+.fief-dev-toggle[aria-expanded='true'] {
+  color: #d3bc80;
+  border-color: #a89963;
+}
+.fief-hud {
+  display: flex;
+  align-items: center;
+  gap: 35px;
+  border: 1px solid #7989583b;
+  background: #1c2c21;
+  border-radius: 5px;
+  padding: 18px 23px;
+}
+.fief-treasury {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 175px;
+  color: #cfb678;
+}
+.fief-treasury > span {
+  font: 32px Georgia;
+}
+.fief-treasury small {
+  display: block;
+  font-size: 10px;
+  color: #9aaa86;
+}
+.fief-treasury strong {
+  display: block;
+  font:
+    27px Georgia,
+    serif;
+  margin-top: 5px;
+  white-space: nowrap;
+}
+.fief-treasury strong small {
+  display: inline;
+  font-size: 13px;
+  color: #c6b782;
+}
+.fief-hud dl {
+  display: flex;
+  gap: 38px;
+  flex: 1;
+  margin: 0;
+  padding-left: 30px;
+  border-left: 1px solid #73805550;
+}
+.fief-hud dt {
+  font-size: 11px;
+  color: #99ad8c;
+}
+.fief-hud dd {
+  margin: 5px 0 0;
+  font: 25px Georgia;
+  color: #dedcc3;
+}
+.fief-hud-grade {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  justify-content: flex-end;
+  max-width: 200px;
+}
+.fief-hud-grade > span {
+  font-size: 10px;
+  color: #9aaf8c;
+}
+.fief-hud-grade strong {
+  font: 32px Georgia;
+  color: #dbc590;
+}
+.fief-hud-grade > small {
+  width: 100%;
+  text-align: right;
+  color: #8d9f7e;
+  font-size: 10px;
+  margin-top: 3px;
+}
+.fief-world-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  padding: 14px 6px;
+  margin: 2px 0 5px;
+  min-height: 47px;
+}
+.fief-world-status > small {
+  margin-left: auto;
+  font-size: 10px;
+  color: #899b7d;
+}
+.fief-world-status > .fief-status {
+  font-size: 9px;
+  padding: 3px 8px;
+}
+.fief-gameplay .fief-dashboard {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  gap: 18px;
+}
+.fief-gameplay .fief-land {
+  align-self: start;
+}
+.fief-gameplay .fief-map {
+  aspect-ratio: 1000/700;
+  min-height: 440px;
+  border: 0;
+}
+.fief-context {
+  min-width: 0;
+  background: #1b2b21;
+  border: 1px solid #72835b3f;
+  border-radius: 6px;
+  padding: 18px 20px;
+  max-height: calc(100dvh - 245px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.fief-context > header {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border-bottom: 1px solid #768c5b30;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.fief-context h2 {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+.fief-context > header > div {
+  flex: 1;
+  min-width: 0;
+}
+.fief-context .fief-eyebrow {
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+.fief-context-level {
+  font: 23px Georgia;
+  color: #d3bd82;
+}
+.fief-context-handle {
+  display: none;
+}
+.fief-meter {
+  margin: 17px 0;
+}
+.fief-meter > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.fief-meter > div:first-child > span {
+  font-size: 11px;
+  color: #bec9b1;
+}
+.fief-meter strong {
+  font: 21px Georgia;
+  color: #d3c187;
+}
+.fief-meter strong small {
+  font-size: 10px;
+  color: #869b76;
+}
+.fief-meter > small {
+  display: block;
+  font-size: 9px;
+  margin-top: 6px;
+}
+.meter-pressure strong {
+  color: #cf9b77;
+}
+.status-pressureStable {
+  color: #9ba9c0;
+}
+.status-pressureRising {
+  color: #b2a0cb;
+}
+.status-pressureDanger {
+  color: #dca27c;
+}
+.status-pressureCritical {
+  color: #ec8f72;
+}
+.fief-cycle-summary {
+  padding: 12px 0;
+  border-top: 1px solid #71845c35;
+  border-bottom: 1px solid #71845c35;
+  margin: 18px 0 9px;
+}
+.fief-cycle-summary > span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #b8c3a8;
+}
+.fief-cycle-summary > span > b {
+  color: #d2c292;
+  font: 18px Georgia;
+}
+.fief-cycle-summary > small {
+  display: flex;
+  justify-content: space-between;
+  color: #899e7c;
+  font-size: 9px;
+  margin: 10px 0;
+}
+.fief-cycle-summary strong {
+  font-size: 10px;
+  color: #b9bd9b;
+  font-weight: 400;
+}
+.fief-context .fief-dungeon-contents {
+  border: 0;
+  padding: 9px 0 14px;
+}
+.fief-context .fief-dungeon-contents div {
+  font-size: 10px;
+  padding: 5px 0;
+}
+.fief-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 12px;
+  background: #2c3b27;
+  color: #c9d0b2;
+  border: 1px solid #72865a66;
+  border-radius: 4px;
+  font-size: 11px !important;
+  margin-top: 12px;
+  min-height: 44px;
+}
+.fief-action.primary {
+  background: linear-gradient(110deg, #5b5d36, #3f4b2c);
+  border-color: #baa76d70;
+  color: #e2d39d;
+}
+.fief-action:hover:not(:disabled) {
+  border-color: #d2bd7a;
+}
+.fief-action > span {
+  white-space: nowrap;
+  font: 12px Georgia;
+  color: #d1bd82;
+}
+.fief-action-status {
+  font-size: 10px;
+  color: #94ae81;
+  line-height: 1.6;
+  margin: 8px 0;
+  min-height: 16px;
+}
+.fief-action-progress {
+  height: 4px;
+  background: #101d13;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.fief-action-progress > span {
+  display: block;
+  height: 100%;
+  background: #bac28c;
+}
+.fief-contract-card {
+  margin-top: 18px;
+  border-top: 1px solid #73845845;
+  padding-top: 15px;
+}
+.fief-contract-card > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #a1b392;
+  font-size: 10px;
+}
+.fief-contract-card > div:first-child b {
+  color: #c6b884;
+  font: 13px Georgia;
+}
+.fief-contract-card p {
+  font-size: 10px;
+  color: #8da67c;
+  margin: 8px 0;
+}
+.fief-action-warning {
+  display: block;
+  color: #dfad80;
+  font-size: 10px;
+  line-height: 1.6;
+  margin: 7px 0;
+}
+.fief-garrison {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  color: #a3b797;
+  font-size: 11px;
+}
+.fief-garrison strong {
+  font: 29px Georgia;
+  color: #d3c088;
+}
+.fief-garrison strong small {
+  font-size: 12px;
+  color: #87a075;
+}
+.fief-context .fief-capacity {
+  margin: 0 -20px 17px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #71835a30;
+}
+.fief-context-note {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #899d7b;
+  margin: 16px 0 0;
+}
+.fief-city-state {
+  padding: 14px;
+  background: #15241a;
+  border: 1px solid #75845540;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #b8c69f;
+  margin: 14px 0 20px;
+}
+.fief-city-stats {
+  margin: 0;
+}
+.fief-city-stats > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #6c805338;
+}
+.fief-city-stats dt {
+  font-size: 11px;
+  color: #9db08c;
+}
+.fief-city-stats dd {
+  font: 24px Georgia;
+  color: #d3c58e;
+  margin: 0;
+}
+.fief-event-log {
+  margin-top: 22px;
+}
+.fief-event-log h3 {
+  font-size: 11px;
+  color: #b7c6a3;
+  font-weight: 400;
+  margin: 0 0 12px;
+}
+.fief-event-log p {
+  font-size: 10px;
+  color: #809574;
+}
+.fief-event-log ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fief-event-log li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  line-height: 1.6;
+  padding: 9px 0;
+  border-bottom: 1px solid #6d825035;
+}
+.fief-event-log strong {
+  font-weight: 400;
+  color: #b4c4a0;
+}
+.fief-event-log small {
+  margin-left: auto;
+  font: 10px Georgia;
+  color: #9caa84;
+}
+.fief-report > span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #8ea17f;
+  padding: 12px 0;
+  border-bottom: 1px solid #6f825539;
+  gap: 12px;
+}
+.fief-report b {
+  color: #c1cba9;
+  font-weight: 400;
+  text-align: right;
+}
+.fief-moving-marker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  filter: drop-shadow(0 2px 5px #07180c);
+}
+.patrol-marker {
+  filter: drop-shadow(0 0 6px #d2c28788);
+  z-index: 4;
+}
+.patrol-marker > small {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  color: #d9c37e;
+  font-size: 16px;
+}
+.pressure-marker {
+  opacity: 0.82;
+}
+.wave-marker {
+  z-index: 4;
+  filter: drop-shadow(0 0 7px #f29a7288);
+}
+.party-marker {
+  z-index: 3;
+}
+.fief-danger-ring {
+  animation: fief-risk-pulse 2s ease-in-out infinite;
+  stroke: #e3a371;
+  fill: #e69b5920;
+}
+.fief-map[data-wave-active='true'] {
+  box-shadow: inset 0 0 55px #ea8f542b;
+}
+.fief-city-warning {
+  position: absolute;
+  left: 52%;
+  top: 67%;
+  transform: translateX(-50%);
+  color: #f1bd87;
+  background: #613a22de;
+  border: 1px solid #dd966c6b;
+  font-size: 9px;
+  line-height: 1.5;
+  border-radius: 3px;
+  padding: 5px 8px;
+  max-width: 45%;
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+}
+.fief-dev-panel {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 385px;
+  max-width: calc(100vw - 28px);
+  max-height: 80dvh;
+  overflow: auto;
+  z-index: 20;
+  background: #15271cef;
+  border: 1px solid #a5945f80;
+  border-radius: 6px;
+  padding: 17px 18px;
+  box-shadow: 0 15px 60px #0009;
+  backdrop-filter: blur(12px);
+}
+.fief-dev-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.fief-dev-panel h2 {
+  font-size: 13px;
+  margin: 0;
+}
+.fief-dev-panel > header > button {
+  background: none;
+  border: 0;
+  color: #aabd94;
+  font-size: 23px;
+  padding: 3px 7px;
+}
+.fief-dev-panel p {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #8ea47c;
+}
+.fief-dev-panel label {
+  font-size: 10px;
+  color: #aab99a;
+  display: block;
+}
+.fief-dev-panel select {
+  display: block;
+  width: 100%;
+  font-size: 11px;
+  margin: 6px 0 13px;
+}
+.fief-dev-levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.fief-dev-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.fief-dev-buttons > button {
+  background: #2d3c26;
+  border: 1px solid #6d825354;
+  color: #c1c9a5;
+  padding: 10px 8px;
+  font-size: 10px;
+  border-radius: 3px;
+  min-height: 40px;
+}
+.fief-dev-panel details {
+  border-top: 1px solid #74815455;
+  margin-top: 14px;
+  padding-top: 12px;
+  font-size: 11px;
+  color: #a3b291;
+}
+.fief-dev-counters {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #8ca07a;
+  margin-top: 12px;
+}
+@keyframes fief-risk-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+@media (min-width: 1500px) {
+  .fief-gameplay .fief-map {
+    min-height: 580px;
+  }
+}
+@media (max-width: 1050px) {
+  .fief-hud {
+    gap: 20px;
+  }
+  .fief-hud dl {
+    gap: 22px;
+    padding-left: 18px;
+  }
+  .fief-gameplay .fief-header nav {
+    gap: 12px;
+  }
+  .fief-gameplay .fief-map {
+    min-height: 380px;
+  }
+  .fief-gameplay .fief-dashboard {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .fief-context {
+    padding: 16px;
+  }
+}
+@media (max-width: 760px) {
+  .fief-gameplay .fief-header {
+    padding: 12px 16px;
+    gap: 10px;
+    min-height: 82px;
+  }
+  .fief-gameplay .fief-header nav {
+    gap: 11px;
+    justify-content: flex-end;
+    flex: 1;
+    width: auto;
+  }
+  .fief-gameplay .fief-heading {
+    min-width: 210px;
+  }
+  .fief-gameplay .fief-brand {
+    font-size: 31px;
+  }
+  .fief-gameplay .fief-header nav a {
+    font-size: 9px;
+  }
+  .fief-gameplay .fief-header nav select {
+    font-size: 10px;
+    max-width: 85px;
+  }
+  .fief-gameplay .fief-content {
+    padding: 12px 12px 20px;
+  }
+  .fief-hud {
+    padding: 12px 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .fief-treasury {
+    min-width: 0;
+    flex: 1;
+    gap: 8px;
+  }
+  .fief-treasury strong {
+    font-size: 23px;
+  }
+  .fief-treasury > span {
+    font-size: 25px;
+  }
+  .fief-hud-grade {
+    max-width: 145px;
+  }
+  .fief-hud-grade strong {
+    font-size: 28px;
+  }
+  .fief-hud-grade > span {
+    font-size: 9px;
+  }
+  .fief-hud-grade > small {
+    font-size: 9px;
+  }
+  .fief-hud dl {
+    order: 3;
+    width: 100%;
+    flex: auto;
+    padding: 11px 0 0;
+    border: 0;
+    border-top: 1px solid #74805244;
+    justify-content: space-around;
+    gap: 15px;
+  }
+  .fief-hud dt {
+    font-size: 10px;
+  }
+  .fief-hud dd {
+    font-size: 21px;
+    margin-top: 4px;
+  }
+  .fief-world-status {
+    font-size: 10px;
+    gap: 6px;
+    padding: 10px 3px;
+    margin: 0;
+    min-height: 40px;
+    flex-wrap: wrap;
+  }
+  .fief-world-status > small {
+    font-size: 8px;
+  }
+  .fief-world-status .fief-status {
+    font-size: 8px;
+  }
+  .fief-gameplay .fief-dashboard {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .fief-gameplay .fief-map {
+    min-height: 0;
+    aspect-ratio: 1000/700;
+  }
+  .fief-gameplay .fief-land {
+    border-radius: 6px 6px 0 0;
+  }
+  .fief-context {
+    max-height: none;
+    overflow: visible;
+    border-radius: 0 0 12px 12px;
+    border-top-color: #a0a36d66;
+    padding: 16px 18px 22px;
+    position: relative;
+    box-shadow: 0 -9px 25px #10190f33;
+  }
+  .fief-context-handle {
+    display: block;
+    width: 32px;
+    height: 3px;
+    background: #677856;
+    border-radius: 4px;
+    margin: -6px auto 11px;
+  }
+  .fief-context > header {
+    margin-bottom: 10px;
+  }
+  .fief-context h2 {
+    font-size: 16px;
+  }
+  .fief-context .fief-capacity {
+    margin-left: -18px;
+    margin-right: -18px;
+  }
+  .fief-moving-marker > .atlas-sprite {
+    transform: scale(0.72);
+  }
+  .fief-city-warning {
+    font-size: 8px;
+    max-width: 48%;
+    padding: 3px 5px;
+    top: 72%;
+  }
+  .fief-dev-panel {
+    right: 14px;
+    bottom: 14px;
+    max-height: 75dvh;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fief-danger-ring {
+    animation: none;
+  }
+  .fief-gameplay * {
+    scroll-behavior: auto !important;
+  }
+}

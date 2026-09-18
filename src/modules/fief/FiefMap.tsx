@@ -1,6 +1,20 @@
 import type { CSSProperties } from 'react';
 import { AtlasSprite } from '../atlas/AtlasSprite';
-import { dungeonStatus, type Facility, type FiefState } from './model';
+import { dungeonStatus, pressureMarkerCount, type Facility, type FiefState } from './model';
+import { PROTOTYPE_CONFIG as CONFIG } from './config';
+function routePoint(
+  progress: number,
+  from: [number, number],
+  via: [number, number],
+  to: [number, number],
+) {
+  const p = Math.max(0, Math.min(1, progress)),
+    q = 1 - p;
+  return {
+    left: q * q * from[0] + 2 * q * p * via[0] + p * p * to[0] + '%',
+    top: q * q * from[1] + 2 * q * p * via[1] + p * p * to[1] + '%',
+  };
+}
 const places: { kind: Facility; x: number; y: number }[] = [
   { kind: 'castle', x: 30, y: 31 },
   { kind: 'city', x: 52, y: 55 },
@@ -26,6 +40,9 @@ export function FiefMap({
   t: (key: string) => string;
 }) {
   const danger = dungeonStatus(state.aether) === 'break';
+  const waves = state.waveState.filter((w) => !w.damageApplied);
+  const patrolling = state.patrolState.status === 'ON_PATROL';
+  const markerCount = pressureMarkerCount(state.monsterPressure);
   return (
     <div
       className={'fief-map ' + (danger ? 'is-break' : '')}
@@ -33,6 +50,8 @@ export function FiefMap({
       aria-label={t('map')}
       data-testid="fief-map"
       data-dungeon-id={state.dungeonId}
+      data-aether-risk={state.aether >= CONFIG.aether.danger ? 'high' : 'low'}
+      data-wave-active={waves.length > 0}
     >
       <svg
         viewBox="0 0 1000 640"
@@ -131,6 +150,7 @@ export function FiefMap({
           opacity=".47"
         />
         <circle
+          className={state.aether >= CONFIG.aether.danger ? 'fief-danger-ring' : ''}
           cx="790"
           cy="166"
           r={danger ? 110 : 64}
@@ -155,6 +175,26 @@ export function FiefMap({
             N
           </text>
         </g>
+        {patrolling && (
+          <path
+            d="M300 198Q520 307 790 166"
+            fill="none"
+            stroke="#b9c18a"
+            strokeWidth="3"
+            strokeDasharray="6 10"
+            opacity=".65"
+          />
+        )}
+        {waves.length > 0 && (
+          <path
+            d="M790 166Q680 243 520 352"
+            fill="none"
+            stroke="#ed9c69"
+            strokeWidth="4"
+            strokeDasharray="5 11"
+            opacity=".8"
+          />
+        )}
       </svg>
       <div className="fief-map-label">
         <span>{t('instance')}</span>
@@ -185,6 +225,77 @@ export function FiefMap({
           </button>
         );
       })}
+      <div className="fief-pressure-markers" aria-hidden="true">
+        {Array.from({ length: markerCount }, (_, i) => (
+          <span
+            key={i}
+            data-testid="fief-pressure-marker"
+            className="fief-moving-marker pressure-marker"
+            style={{ left: [72, 87, 76, 85, 90][i] + '%', top: [21, 26, 36, 39, 18][i] + '%' }}
+          >
+            <AtlasSprite frameKey="world.monster.wolf" size={42} />
+          </span>
+        ))}
+      </div>
+      {patrolling && (
+        <span
+          className="fief-moving-marker patrol-marker"
+          data-testid="fief-patrol-marker"
+          aria-label={t('patrolMoving')}
+          role="img"
+          style={routePoint(
+            state.patrolState.elapsed / CONFIG.patrol.duration,
+            [30, 31],
+            [52, 48],
+            [79, 26],
+          )}
+        >
+          <AtlasSprite frameKey="world.npc.guard" size={50} />
+          <small>⚑</small>
+        </span>
+      )}
+      {state.contractState.status === 'IN_PROGRESS' && (
+        <span
+          className="fief-moving-marker party-marker"
+          data-testid="fief-party-marker"
+          role="img"
+          aria-label={t('simulatedParty')}
+          style={{ left: '83%', top: '28%' }}
+        >
+          <AtlasSprite frameKey="world.player.base" size={45} />
+        </span>
+      )}
+      {waves.map((wave) => (
+        <div
+          key={wave.id}
+          className="fief-wave"
+          data-testid="fief-wave"
+          data-break-id={wave.id}
+          aria-label={t('wave')}
+          role="img"
+        >
+          {Array.from({ length: wave.count }, (_, i) => (
+            <span
+              key={i}
+              className="fief-moving-marker wave-marker"
+              data-testid="fief-wave-monster"
+              style={routePoint(
+                Math.max(0, wave.elapsed / CONFIG.wave.duration - i * 0.06),
+                [79 + (i - 2) * 2.2, 26 + (i % 2) * 2],
+                [68, 38 + (i % 2) * 2],
+                [52 + (i - 2) * 1.5, 55],
+              )}
+            >
+              <AtlasSprite frameKey="world.monster.bandit" size={48} />
+            </span>
+          ))}
+        </div>
+      ))}
+      {(waves.length > 0 || state.waveState.some((w) => w.damageApplied)) && (
+        <span className="fief-city-warning" role="status" data-testid="fief-city-warning">
+          {t(waves.length ? 'waveApproaching' : 'cityDamaged')}
+        </span>
+      )}
       <div className="fief-map-scale">
         <span />
         100 m · PREVIEW

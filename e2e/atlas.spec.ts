@@ -1,3 +1,4 @@
+import { referenceScreenshot } from './referenceScreenshot';
 import { test, expect, type Page } from '@playwright/test';
 async function atlas(page: Page) {
   await page.goto('/atlas');
@@ -16,7 +17,9 @@ test('atlas overview, LOD, mouse selection and mobile inspection', async ({ page
   await page.getByRole('button', { name: '소유권', exact: true }).click();
   if (await layerButton.isVisible()) await layerButton.click();
   await expect(page.locator('.atlas-map-readout')).toContainText('세계 관점');
-  await page.screenshot({ path: 'docs/screenshots/atlas-overview-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/atlas-overview-' + info.project.name + '.png',
+  });
   await page.getByRole('button', { name: '영지 관점', exact: true }).click();
   await expect(page.locator('.atlas-map-readout')).toContainText('영지 관점');
   await page.getByRole('button', { name: '현장 관점', exact: true }).click();
@@ -25,7 +28,9 @@ test('atlas overview, LOD, mouse selection and mobile inspection', async ({ page
   await page.getByRole('button', { name: /구리빛 광산/ }).click();
   await expect(page.getByRole('heading', { name: '구리빛 광산', exact: true })).toBeVisible();
   await expect(page.locator('.atlas-inspector')).toBeInViewport();
-  await page.screenshot({ path: 'docs/screenshots/atlas-local-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/atlas-local-' + info.project.name + '.png',
+  });
   const canvas = page.locator('canvas'),
     box = await canvas.boundingBox();
   if (!box) throw Error('canvas missing');
@@ -73,7 +78,9 @@ test('crown stewardship, distinct ownership and history across scenes', async ({
   await expect(page.locator('.atlas-object-hero')).toContainText('공성 중');
   await expect(page.locator('.atlas-ownership')).toContainText('새벽사슴 가문');
   await expect(page.locator('.atlas-ownership')).toContainText('붉은가시 가문');
-  await page.screenshot({ path: 'docs/screenshots/atlas-conflict-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/atlas-conflict-' + info.project.name + '.png',
+  });
   await page.getByRole('button', { name: /쇠퇴와 흔적/ }).click();
   await expect(page.locator('.atlas-object-hero')).toContainText('L4');
   await expect(page.locator('.atlas-object-hero')).toContainText('파손');
@@ -95,7 +102,9 @@ test('city variants, composed items, landless house and locale switching', async
   await page.getByLabel('강화 · 효과', { exact: true }).fill('15');
   await expect(page.locator('.atlas-item-name')).toContainText('T5 +15');
   await expect(page.getByTestId('atlas-item-visual').locator('.atlas-sprite')).toHaveCount(3);
-  await page.screenshot({ path: 'docs/screenshots/atlas-items-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/atlas-items-' + info.project.name + '.png',
+  });
   await page.getByRole('tab', { name: '가문', exact: true }).click();
   await page.getByRole('combobox', { name: '가문', exact: true }).selectOption('wanderer');
   await expect(page.locator('.atlas-inspector')).toContainText('영지 없이');

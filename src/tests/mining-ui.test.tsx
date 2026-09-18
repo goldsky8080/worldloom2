@@ -80,6 +80,7 @@ it('keeps mining locked during movement even after a displayed countdown reaches
 it('shares active mining progress across panels and blocks both actions', () => {
   nearby();
   const now = Date.now();
+  timeService.tick.set(now);
   runtime.cache.mining.set({
     active: [
       {

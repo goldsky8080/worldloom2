@@ -1,3 +1,4 @@
+import { referenceScreenshot } from './referenceScreenshot';
 import { WORLD_CONFIG } from '../src/core/world/worldConfig';
 import { test, expect, type Page } from '@playwright/test';
 async function enter(page: Page) {
@@ -41,9 +42,9 @@ test('login, Pixi world, registry panels and placeholder art', async ({ page }, 
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/login');
   await expect(page.getByRole('heading', { name: '로그인', exact: true })).toBeVisible();
-  await page.screenshot({ path: 'docs/screenshots/login-' + info.project.name + '.png' });
+  await referenceScreenshot(page, { path: 'docs/screenshots/login-' + info.project.name + '.png' });
   await enter(page);
-  await page.screenshot({ path: 'docs/screenshots/world-' + info.project.name + '.png' });
+  await referenceScreenshot(page, { path: 'docs/screenshots/world-' + info.project.name + '.png' });
   await open(page, '월드', '캐릭터');
   await expect(page.getByRole('dialog', { name: '캐릭터', exact: true })).toBeVisible();
   await expect(page.getByText('보유 캐릭터 · 7')).toBeVisible();
@@ -51,7 +52,9 @@ test('login, Pixi world, registry panels and placeholder art', async ({ page }, 
   await open(page, '경제', '인벤토리');
   await expect(page.getByRole('dialog', { name: '인벤토리', exact: true })).toBeVisible();
   await expect(page.getByText('구리 광석', { exact: true })).toBeVisible();
-  await page.screenshot({ path: 'docs/screenshots/inventory-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/inventory-' + info.project.name + '.png',
+  });
   expect(errors).toEqual([]);
 });
 test('first playable loop: select, distance, travel, mine and authoritative reward', async ({
@@ -68,17 +71,23 @@ test('first playable loop: select, distance, travel, mine and authoritative rewa
   await expect(detail.getByText('도착까지', { exact: false })).toBeVisible();
   await expect(detail.getByRole('button', { name: '채광 시작', exact: true })).toBeDisabled();
   await expect(detail.getByTestId('world-distance')).not.toHaveText(before);
-  await page.screenshot({ path: 'docs/screenshots/v02-travel-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/v02-travel-' + info.project.name + '.png',
+  });
   await expect(detail.getByRole('button', { name: '채광 시작', exact: true })).toBeEnabled();
   await expect(detail.getByTestId('world-distance')).toHaveText('0 단위');
   await detail.getByRole('button', { name: '채광 시작', exact: true }).click();
   await expect(detail.getByRole('progressbar')).toBeVisible();
   await expect(detail.getByRole('progressbar')).toBeInViewport();
   await expect(detail.getByRole('button', { name: '광맥으로 이동', exact: true })).toBeDisabled();
-  await page.screenshot({ path: 'docs/screenshots/v02-mining-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/v02-mining-' + info.project.name + '.png',
+  });
   await expect(detail.getByText('구리 광석 +3', { exact: true })).toBeVisible();
   await expect(page.locator('.toast-stack')).toContainText('채광 완료');
-  await page.screenshot({ path: 'docs/screenshots/v02-reward-' + info.project.name + '.png' });
+  await referenceScreenshot(page, {
+    path: 'docs/screenshots/v02-reward-' + info.project.name + '.png',
+  });
   await detail.getByRole('button', { name: '닫기', exact: true }).click();
   await open(page, '경제', '인벤토리');
   await expect(page.getByText('수량: 15', { exact: true })).toBeVisible();

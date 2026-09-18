@@ -78,8 +78,73 @@ raidCount|공략 횟수|Raids completed|攻略回数|攻略次数|Lần đột k
 map|인스턴스 영지 지도|Instance fief map|インスタンス領地地図|实例领地地图|Bản đồ lãnh địa riêng
 mapHint|시설을 선택하여 역할을 확인하세요.|Select a facility to inspect its role.|施設を選んで役割を確認。|选择设施查看用途。|Chọn công trình để xem vai trò.
 noEconomy|경제·세금·보상은 아직 계산하지 않습니다.|Economy, tax and rewards are not simulated yet.|経済・税・報酬は未計算。|尚未模拟经济、税收和奖励。|Chưa mô phỏng kinh tế, thuế và thưởng.`;
+const gameplayRows = `readiness|성 관리 여력|Castle capacity|城の管理余力|城堡管理能力|Năng lực thành
+lord|영주 · 기사|Lord · Knight|領主 · 騎士|领主 · 骑士|Lãnh chúa · Hiệp sĩ
+treasury|영지 금고|Treasury|領地金庫|领地金库|Ngân khố
+sentiment|민심|Public sentiment|民心|民心|Lòng dân
+security|치안|Security|治安|治安|An ninh
+prosperity|번영|Prosperity|繁栄|繁荣|Thịnh vượng
+pressure|몬스터 압력|Monster pressure|モンスター圧力|怪物压力|Áp lực quái vật
+pressureStable|외곽 안정|Perimeter stable|外縁安定|外围稳定|Vùng ngoài ổn định
+pressureRising|몬스터 활동 증가|Monster activity rising|活動増加|怪物活动增加|Quái vật tăng hoạt động
+pressureDanger|외곽 위험|Perimeter danger|外縁危険|外围危险|Vùng ngoài nguy hiểm
+pressureCritical|외곽 매우 위험|Perimeter critical|外縁非常に危険|外围极度危险|Vùng ngoài nguy cấp
+garrison|주둔군|Garrison|駐屯軍|驻军|Đồn trú
+recruit|병사 모집|Recruit soldiers|兵士募集|招募士兵|Tuyển quân
+patrol|던전 주변 순찰|Patrol dungeon perimeter|ダンジョン外縁巡回|巡逻地下城外围|Tuần tra quanh hầm ngục
+patrolReady|순찰 대기|Patrol ready|巡回待機|巡逻待命|Tuần tra sẵn sàng
+patrolMoving|순찰대 이동 중|Patrol travelling|巡回隊移動中|巡逻队移动中|Đội tuần tra di chuyển
+patrolDone|외곽 순찰 완료|Patrol completed|外縁巡回完了|外围巡逻完成|Tuần tra hoàn tất
+patrolShort|순찰은 외부 몬스터를 억제합니다.|Patrols suppress external monsters.|巡回は外部の敵を抑制。|巡逻压制外部怪物。|Tuần tra ngăn quái bên ngoài.
+raidAction|직접 공략|Raid dungeon|直接攻略|直接攻略|Đột kích hầm ngục
+raidReady|공략 준비 가능|Ready to raid|攻略準備可能|可准备攻略|Sẵn sàng đột kích
+raidPreparing|공략 준비 중|Preparing raid|攻略準備中|准备攻略中|Chuẩn bị đột kích
+raidProgress|던전 공략 중|Raiding dungeon|ダンジョン攻略中|攻略地下城中|Đang đột kích
+raidDone|공략 완료 · 에테르 안정화|Raid completed · aether reduced|攻略完了 · エーテル安定化|攻略完成 · 以太稳定化|Đột kích xong · giảm aether
+contractAction|토벌 의뢰 등록|Post dungeon contract|討伐依頼を登録|发布讨伐委托|Đăng hợp đồng đột kích
+contractNone|등록된 의뢰 없음|No active contract|依頼なし|暂无委托|Chưa có hợp đồng
+contractPosted|모험가 파티 모집 중|Seeking adventurer party|冒険者パーティー募集中|招募冒险者队伍中|Tìm nhóm mạo hiểm
+contractAccepted|은빛등불 파티가 수락했습니다|Silver Lantern party accepted|銀灯のパーティーが受諾|银灯队伍已接受|Nhóm Đèn Bạc đã nhận
+contractProgress|은빛등불 파티 공략 중|Silver Lantern party raiding|銀灯のパーティーが攻略中|银灯队伍正在攻略|Nhóm Đèn Bạc đang đột kích
+contractDone|의뢰 완료 · 던전 안정화|Contract completed · dungeon stabilized|依頼完了 · 安定化|委托完成 · 地下城稳定化|Hợp đồng xong · hầm ngục ổn định
+contractGoal|목표: 던전 에테르 안정화|Goal: stabilize dungeon aether|目標: エーテル安定化|目标：稳定地下城以太|Mục tiêu: ổn định aether
+simulatedParty|가상 모험가 파티|Simulated adventurer party|模擬冒険者パーティー|模拟冒险者队伍|Nhóm mạo hiểm mô phỏng
+insufficientGold|금고 잔액이 부족합니다.|Insufficient treasury funds.|金庫残高不足。|金库余额不足。|Ngân khố không đủ.
+garrisonFull|주둔군 수용 한도에 도달했습니다.|Garrison capacity reached.|駐屯軍定員に到達。|驻军达到容量上限。|Đồn trú đã đầy.
+needSoldiers|순찰 병력이 부족합니다.|Not enough soldiers for patrol.|巡回兵力不足。|巡逻兵力不足。|Không đủ quân tuần tra.
+wave|몬스터 웨이브|Monster wave|モンスターウェーブ|怪物浪潮|Làn sóng quái vật
+waveApproaching|몬스터가 도시로 향합니다|Monsters approaching the city|モンスターが都市へ接近|怪物正在接近城市|Quái vật tiến đến đô thị
+cityDamaged|도시 피해 발생|City damaged|都市に被害|城市受损|Đô thị bị thiệt hại
+cityCalm|도시 안정|City stable|都市安定|城市稳定|Đô thị ổn định
+calm|영지 평온|Fief at peace|領地平穏|领地平静|Lãnh địa yên bình
+aetherWarning|던전 내부 위험 상승|Dungeon aether danger|内部危険増加|地下城内部危险增加|Nguy cơ aether tăng
+pressureWarning|던전 외곽 몬스터 위험|Monsters threaten the perimeter|外縁モンスター危険|地下城外围怪物危险|Quái đe dọa vùng ngoài
+securityWarning|치안 회복 필요|Security needs attention|治安改善が必要|需要改善治安|An ninh cần cải thiện
+warnings|현재 경고|Active warnings|現在の警告|当前警报|Cảnh báo hiện tại
+cityStatus|도시 상태|City condition|都市の状態|城市状态|Tình trạng đô thị
+report|영지 보고|Fief report|領地報告|领地报告|Báo cáo lãnh địa
+waveDamageEvent|웨이브 도착 · 도시 피해|Wave arrived · city damaged|ウェーブ到着 · 都市被害|浪潮抵达 · 城市受损|Làn sóng đến · đô thị thiệt hại
+recruitEvent|병사 모집 완료|Soldiers recruited|兵士募集完了|招募士兵完成|Đã tuyển quân
+patrolStartedEvent|외곽 순찰 출발|Perimeter patrol departed|外縁巡回出発|外围巡逻出发|Tuần tra khởi hành
+patrolCompleteEvent|외곽 몬스터 억제 완료|Perimeter monsters suppressed|外縁の敵を抑制|外围怪物已压制|Đã ngăn quái vùng ngoài
+raidStartedEvent|던전 공략 출발|Dungeon raid started|ダンジョン攻略開始|开始攻略地下城|Đột kích bắt đầu
+contractPostedEvent|토벌 의뢰 등록|Contract posted|討伐依頼登録|讨伐委托已发布|Đã đăng hợp đồng
+contractAcceptedEvent|모험가 파티 의뢰 수락|Adventurer party accepted|冒険者が依頼受諾|冒险者队伍已接受|Nhóm mạo hiểm đã nhận
+contractCompleteEvent|토벌 의뢰 완료|Contract completed|討伐依頼完了|讨伐委托完成|Hợp đồng hoàn tất
+devPanel|개발자 도구|Developer tools|開発者ツール|开发者工具|Công cụ phát triển
+devNote|테스트 수치 · 운영 밸런스 미확정|Test values · production balance undecided|試験値 · 運用バランス未定|测试数值 · 运营平衡未定|Giá trị thử · cân bằng chưa chốt
+devBreak|던전 폭주 발생시키기|Trigger dungeon break|暴走を発生|触发地下城暴走|Kích hoạt bùng phát
+devInstantRaid|즉시 공략 · 테스트|Instant raid · test|即時攻略 · 試験|即时攻略 · 测试|Đột kích tức thì · thử
+devAether|에테르 +20|Aether +20|エーテル +20|以太 +20|Aether +20
+devPressure|몬스터 압력 +20|Monster pressure +20|モンスター圧力 +20|怪物压力 +20|Áp lực quái +20
+devTreasury|금고 +5000|Treasury +5000|金庫 +5000|金库 +5000|Ngân khố +5000
+close|닫기|Close|閉じる|关闭|Đóng
+grade|던전 등급|Dungeon grade|ダンジョン等級|地下城等级|Hạng hầm ngục
+cycleShort|다음 주기|Next cycle|次の周期|下个周期|Chu kỳ sau
+prototypeShort|영지 플레이 프로토타입|Fief gameplay prototype|領地プレイ試作|领地玩法原型|Nguyên mẫu chơi lãnh địa
+noEvents|아직 사건이 없습니다.|No events yet.|事件なし。|暂无事件。|Chưa có sự kiện.`;
 const entries = Object.fromEntries(
-  rows.split('\n').map((row) => {
+  (rows + '\n' + gameplayRows).split('\n').map((row) => {
     const [key, ...values] = row.split('|');
     return [key, values];
   }),

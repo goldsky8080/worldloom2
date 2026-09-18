@@ -16,7 +16,7 @@ function FiefEntry() {
 }
 export const FiefModule: GameModuleDefinition = {
   id: 'fief-prototype',
-  version: '0.1.0',
+  version: '0.2.0',
   localizationNamespaces: ['fief'],
   routes: [{ path: '/fief', component: FiefEntry }],
   menuItems: [
