@@ -218,5 +218,6 @@
   "mining.tooFar": "Bạn ở quá xa mạch quặng.",
   "mining.invalidNode": "Không thể khai thác điểm này.",
   "mining.alreadyActive": "Đang có hoạt động khai thác.",
-  "menu.atlas": "Atlas thế giới"
+  "menu.atlas": "Atlas thế giới",
+  "menu.fief": "Quản lý lãnh địa"
 }

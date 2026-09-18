@@ -218,5 +218,6 @@
   "mining.tooFar": "광맥에서 너무 멀리 떨어져 있습니다.",
   "mining.invalidNode": "채광할 수 없는 광맥입니다.",
   "mining.alreadyActive": "이미 채광 중입니다.",
-  "menu.atlas": "월드 아틀라스"
+  "menu.atlas": "월드 아틀라스",
+  "menu.fief": "영지 관리"
 }

@@ -206,6 +206,11 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
               {t('menu.atlas')} ↗
             </Link>
           )}
+          {!signup && (
+            <Link className="atlas-login-link" to="/fief">
+              {t('menu.fief')} ↗
+            </Link>
+          )}
           {!signup && <p className="demo-credentials">{t('auth.credentials')}</p>}
           <p className="muted auth-disclaimer">{t('common.mockHint')}</p>
         </GamePanel>

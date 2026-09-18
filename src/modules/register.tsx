@@ -10,6 +10,7 @@ import { SettingsPanel } from './settings/SettingsPanel';
 import { AccountPanel } from './account/AccountPanel';
 import { NotificationPanel } from './notification/NotificationPanel';
 import { AtlasModule } from './atlas/AtlasModule';
+import { FiefModule } from './fief/FiefModule';
 import { previewAtlases, previewFrameAssets } from '../services/assets/atlas';
 import { MiningModule } from './mining/MiningModule';
 import { runtime } from '../app/bootstrap/services';
@@ -45,6 +46,7 @@ export function registerModules() {
   assetManager.register(frameworkAssets);
   assetManager.registerAtlases(previewAtlases, previewFrameAssets);
   moduleRegistry.register(AtlasModule);
+  moduleRegistry.register(FiefModule);
   moduleRegistry.register({
     id: 'world',
     version: '0.1.0',

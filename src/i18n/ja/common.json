@@ -218,5 +218,6 @@
   "mining.tooFar": "鉱脈から離れすぎています。",
   "mining.invalidNode": "この鉱脈は採掘できません。",
   "mining.alreadyActive": "すでに採掘中です。",
-  "menu.atlas": "ワールドアトラス"
+  "menu.atlas": "ワールドアトラス",
+  "menu.fief": "領地管理"
 }

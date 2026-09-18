@@ -4,7 +4,13 @@ import { GameButton } from '../../ui/components';
 import { useAtom } from '../../core/state/useAtom';
 import { useMediaQuery } from '../../ui/layout/useMediaQuery';
 import { session } from '../../app/bootstrap/services';
-import { languageLabels, languages, setLanguage, type Language } from '../../services/localization';
+import {
+  languageLabels,
+  languages,
+  setLanguage,
+  useTranslation,
+  type Language,
+} from '../../services/localization';
 import { enhancementKey } from '../../services/assets/atlas';
 import { AtlasScene, type AtlasStats } from './AtlasScene';
 import { useAtlasCopy } from './copy';
@@ -55,6 +61,7 @@ function Compass() {
   );
 }
 export function AtlasPage() {
+  const { t: commonT } = useTranslation();
   const { t, name, language } = useAtlasCopy(),
     user = useAtom(session);
   const mobile = useMediaQuery('(max-width:700px)'),
@@ -331,6 +338,9 @@ export function AtlasPage() {
               </option>
             ))}
           </select>
+          <Link className="atlas-back" to="/fief">
+            {commonT('menu.fief')} ↗
+          </Link>
           <Link className="atlas-back" to={user ? '/game' : '/login'}>
             {t('game')} ↗
           </Link>

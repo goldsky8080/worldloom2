@@ -218,5 +218,6 @@
   "mining.tooFar": "You are too far from the vein.",
   "mining.invalidNode": "This node cannot be mined.",
   "mining.alreadyActive": "Mining is already active.",
-  "menu.atlas": "World Atlas"
+  "menu.atlas": "World Atlas",
+  "menu.fief": "Fief management"
 }
