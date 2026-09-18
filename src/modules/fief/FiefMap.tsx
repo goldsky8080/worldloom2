@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { AtlasSprite } from '../atlas/AtlasSprite';
-import { dungeonStatus, pressureMarkerCount, type Facility, type FiefState } from './model';
+import { dungeonStatus, saturationMarkerCount, type Facility, type FiefState } from './model';
 import { PROTOTYPE_CONFIG as CONFIG } from './config';
 function routePoint(
   progress: number,
@@ -41,8 +41,9 @@ export function FiefMap({
 }) {
   const danger = dungeonStatus(state.aether) === 'break';
   const waves = state.waveState.filter((w) => !w.damageApplied);
-  const patrolling = state.patrolState.status === 'ON_PATROL';
-  const markerCount = pressureMarkerCount(state.monsterPressure);
+  const patrolling = state.soldiers.standingAssigned > 0;
+  const emergency = state.emergencyState.status === 'IN_PROGRESS';
+  const markerCount = saturationMarkerCount(state.monsterSaturation);
   return (
     <div
       className={'fief-map ' + (danger ? 'is-break' : '')}
@@ -175,7 +176,7 @@ export function FiefMap({
             N
           </text>
         </g>
-        {patrolling && (
+        {(patrolling || emergency) && (
           <path
             d="M300 198Q520 307 790 166"
             fill="none"
@@ -202,7 +203,11 @@ export function FiefMap({
       </div>
       {places.map((p) => {
         const level =
-          p.kind === 'city' ? state.cityLevel : p.kind === 'castle' ? state.castleLevel : 1;
+          p.kind === 'city'
+            ? state.cityLevel
+            : p.kind === 'castle'
+              ? state.castleLevel
+              : state.manorLevel;
         return (
           <button
             key={p.kind}
@@ -225,12 +230,12 @@ export function FiefMap({
           </button>
         );
       })}
-      <div className="fief-pressure-markers" aria-hidden="true">
+      <div className="fief-saturation-markers" aria-hidden="true">
         {Array.from({ length: markerCount }, (_, i) => (
           <span
             key={i}
-            data-testid="fief-pressure-marker"
-            className="fief-moving-marker pressure-marker"
+            data-testid="fief-saturation-marker"
+            className="fief-moving-marker saturation-marker"
             style={{ left: [72, 87, 76, 85, 90][i] + '%', top: [21, 26, 36, 39, 18][i] + '%' }}
           >
             <AtlasSprite frameKey="world.monster.wolf" size={42} />
@@ -240,18 +245,41 @@ export function FiefMap({
       {patrolling && (
         <span
           className="fief-moving-marker patrol-marker"
-          data-testid="fief-patrol-marker"
-          aria-label={t('patrolMoving')}
+          data-testid="fief-standing-marker"
+          aria-label={t('standing')}
           role="img"
           style={routePoint(
-            state.patrolState.elapsed / CONFIG.patrol.duration,
+            1 -
+              Math.abs(
+                2 *
+                  ((state.suppressionElapsed % CONFIG.standing.routeDuration) /
+                    CONFIG.standing.routeDuration) -
+                  1,
+              ),
             [30, 31],
             [52, 48],
             [79, 26],
           )}
         >
           <AtlasSprite frameKey="world.npc.guard" size={50} />
-          <small>⚑</small>
+          <small>⚑ {state.soldiers.standingAssigned}</small>
+        </span>
+      )}
+      {emergency && (
+        <span
+          className="fief-moving-marker emergency-marker"
+          data-testid="fief-emergency-marker"
+          role="img"
+          aria-label={t('emergency')}
+          style={routePoint(
+            state.emergencyState.elapsed / CONFIG.emergency.duration,
+            [30, 31],
+            [52, 48],
+            [79, 26],
+          )}
+        >
+          <AtlasSprite frameKey="world.npc.guard" size={60} />
+          <small>⚔ {state.soldiers.emergencyAssigned}</small>
         </span>
       )}
       {state.contractState.status === 'IN_PROGRESS' && (
@@ -291,7 +319,10 @@ export function FiefMap({
           ))}
         </div>
       ))}
-      {(waves.length > 0 || state.waveState.some((w) => w.damageApplied)) && (
+      {(waves.length > 0 ||
+        (state.waveState.some((w) => w.damageApplied) &&
+          Math.min(state.security, state.prosperity, state.publicSentiment) <
+            CONFIG.territory.bands.stable)) && (
         <span className="fief-city-warning" role="status" data-testid="fief-city-warning">
           {t(waves.length ? 'waveApproaching' : 'cityDamaged')}
         </span>

@@ -1,100 +1,26 @@
+import { RecoverySummary } from './RecoverySummary';
+import { CastleManagementPanel } from './CastleManagementPanel';
+import { ManorManagementPanel } from './ManorManagementPanel';
+import { Meter, EventLog, duration, formatScore } from './presentation';
 import type { Dispatch, SetStateAction } from 'react';
 import { AtlasSprite } from '../atlas/AtlasSprite';
 import { facilityFrame } from './FiefMap';
 import { PROTOTYPE_CONFIG as CONFIG } from './config';
 import {
-  canPatrol,
+  stateBand,
+  gradeRange,
   canPostContract,
-  canRecruit,
-  castleReadiness,
   contractBusy,
   dungeonContents,
-  dungeonStatus,
-  fiefWarnings,
   forecastReady,
-  garrisonCapacity,
-  gradeRange,
   nextGrade,
   postDungeonContract,
-  pressureStatus,
   raidBusy,
-  recruitSoldiers,
   remainingSeconds,
   startDirectRaid,
-  startPatrol,
   type Facility,
   type FiefState,
 } from './model';
-export function duration(seconds: number) {
-  const s = Math.ceil(seconds);
-  return s >= 86400
-    ? Math.floor(s / 86400) + 'd ' + Math.floor((s % 86400) / 3600) + 'h'
-    : s >= 3600
-      ? Math.floor(s / 3600) + 'h ' + Math.floor((s % 3600) / 60) + 'm'
-      : String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-}
-export function Meter({
-  label,
-  value,
-  testId,
-  kind = 'aether',
-  t,
-}: {
-  label: string;
-  value: number;
-  testId: string;
-  kind?: 'aether' | 'pressure';
-  t: (key: string) => string;
-}) {
-  const status = kind === 'aether' ? dungeonStatus(value) : pressureStatus(value);
-  return (
-    <div className={'fief-meter meter-' + kind}>
-      <div>
-        <span>{label}</span>
-        <strong data-testid={testId}>
-          {value.toFixed(1)}
-          <small> / 100</small>
-        </strong>
-      </div>
-      <div
-        className={'fief-aether-track status-' + status}
-        role="progressbar"
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(value)}
-      >
-        <span style={{ width: value + '%' }} />
-      </div>
-      <small
-        className={'status-' + status}
-        data-testid={kind === 'aether' ? 'fief-status' : undefined}
-      >
-        {t(status)}
-      </small>
-    </div>
-  );
-}
-export function EventLog({ state, t }: { state: FiefState; t: (key: string) => string }) {
-  return (
-    <div className="fief-event-log">
-      <h3>{t('history')}</h3>
-      {!state.log.length ? (
-        <p>{t('noEvents')}</p>
-      ) : (
-        <ol>
-          {state.log.slice(0, 6).map((entry) => (
-            <li key={entry.id}>
-              <span className={'fief-log-dot log-' + entry.kind} />
-              <strong>{t(entry.kind + 'Event')}</strong>
-              <small>#{entry.cycle}</small>
-            </li>
-          ))}
-        </ol>
-      )}
-    </div>
-  );
-}
 const contractLabels = {
   NONE: 'contractNone',
   POSTED: 'contractPosted',
@@ -116,7 +42,11 @@ export function ContextPanel({
   const contents = dungeonContents[state.grade],
     waves = state.waveState.filter((w) => !w.damageApplied);
   const level =
-    selected === 'city' ? state.cityLevel : selected === 'castle' ? state.castleLevel : 1;
+    selected === 'city'
+      ? state.cityLevel
+      : selected === 'castle'
+        ? state.castleLevel
+        : state.manorLevel;
   const raidLabel =
     state.raidState.status === 'PREPARING'
       ? 'raidPreparing'
@@ -147,10 +77,10 @@ export function ContextPanel({
         <>
           <Meter label={t('aether')} value={state.aether} testId="fief-aether-value" t={t} />
           <Meter
-            label={t('pressure')}
-            value={state.monsterPressure}
-            testId="fief-pressure-value"
-            kind="pressure"
+            label={t('saturation')}
+            value={state.monsterSaturation}
+            testId="fief-saturation-value"
+            kind="saturation"
             t={t}
           />
           <div className="fief-cycle-summary">
@@ -256,90 +186,7 @@ export function ContextPanel({
           </div>
         </>
       )}
-      {selected === 'castle' && (
-        <>
-          <div className="fief-garrison">
-            <span>{t('garrison')}</span>
-            <strong data-testid="fief-garrison">
-              {state.garrison}
-              <small> / {garrisonCapacity(state)}</small>
-            </strong>
-          </div>
-          <div className="fief-capacity">
-            <span>{t('readiness')}</span>
-            <strong className={'readiness-' + castleReadiness(state)}>
-              {t(castleReadiness(state))}
-            </strong>
-          </div>
-          <button
-            type="button"
-            className="fief-action"
-            data-testid="fief-recruit"
-            disabled={!canRecruit(state)}
-            onClick={() => setState(recruitSoldiers)}
-          >
-            {t('recruit')}
-            <span>{CONFIG.castle.recruitCost} G</span>
-          </button>
-          {!canRecruit(state) && (
-            <small className="fief-action-warning">
-              {t(state.treasury < CONFIG.castle.recruitCost ? 'insufficientGold' : 'garrisonFull')}
-            </small>
-          )}
-          <Meter
-            label={t('pressure')}
-            value={state.monsterPressure}
-            testId="fief-pressure-value"
-            kind="pressure"
-            t={t}
-          />
-          <button
-            type="button"
-            className="fief-action primary"
-            data-testid="fief-patrol-start"
-            disabled={!canPatrol(state)}
-            onClick={() => setState(startPatrol)}
-          >
-            {t('patrol')}
-            <span>{CONFIG.patrol.cost} G</span>
-          </button>
-          <div
-            className="fief-action-status"
-            role="status"
-            data-testid="fief-patrol-status"
-            data-state={state.patrolState.status}
-          >
-            {t(
-              state.patrolState.status === 'ON_PATROL'
-                ? 'patrolMoving'
-                : state.patrolState.status === 'SUCCEEDED'
-                  ? 'patrolDone'
-                  : 'patrolReady',
-            )}
-          </div>
-          {state.patrolState.status === 'ON_PATROL' && (
-            <div
-              className="fief-action-progress"
-              role="progressbar"
-              aria-label={t('patrol')}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round((state.patrolState.elapsed / CONFIG.patrol.duration) * 100)}
-            >
-              <span
-                style={{ width: (state.patrolState.elapsed / CONFIG.patrol.duration) * 100 + '%' }}
-              />
-            </div>
-          )}
-          {state.treasury < CONFIG.patrol.cost && (
-            <small className="fief-action-warning">{t('insufficientGold')}</small>
-          )}
-          {state.garrison < CONFIG.patrol.requiredSoldiers && (
-            <small className="fief-action-warning">{t('needSoldiers')}</small>
-          )}
-          <p className="fief-context-note">{t('patrolShort')}</p>
-        </>
-      )}
+      {selected === 'castle' && <CastleManagementPanel state={state} setState={setState} t={t} />}
       {selected === 'city' && (
         <>
           <div
@@ -350,7 +197,9 @@ export function ContextPanel({
             {t(
               waves.length
                 ? 'waveApproaching'
-                : state.waveState.some((w) => w.damageApplied)
+                : state.waveState.some((w) => w.damageApplied) &&
+                    Math.min(state.security, state.prosperity, state.publicSentiment) <
+                      CONFIG.territory.bands.stable
                   ? 'cityDamaged'
                   : 'cityCalm',
             )}
@@ -363,48 +212,25 @@ export function ContextPanel({
             ].map(([key, value]) => (
               <div key={key}>
                 <dt>{t(String(key))}</dt>
-                <dd>{value}</dd>
+                <dd>
+                  {formatScore(Number(value))}{' '}
+                  <small className={'fief-state-tag ' + stateBand(Number(value))}>
+                    {t(stateBand(Number(value)))}
+                  </small>
+                </dd>
               </div>
             ))}
           </dl>
+          <p className="fief-context-note">{t('cityEconomyHint')}</p>
+          <p className="fief-context-note">{t('stateHint')}</p>
+          <p>
+            {t('range')} {gradeRange(state.cityLevel).join(' / ')}
+          </p>
+          <RecoverySummary state={state} t={t} />
           <EventLog state={state} t={t} />
         </>
       )}
-      {selected === 'manor' && (
-        <>
-          <div className="fief-garrison">
-            <span>{t('treasury')}</span>
-            <strong>
-              {state.treasury.toLocaleString()}
-              <small> G</small>
-            </strong>
-          </div>
-          <div className="fief-report">
-            <span>
-              {t('warnings')} <b>{fiefWarnings(state).length}</b>
-            </span>
-            <span>
-              {t('dungeon')}{' '}
-              <b>
-                {state.grade} · {t(dungeonStatus(state.aether))}
-              </b>
-            </span>
-            <span>
-              {t('castle')}{' '}
-              <b>
-                L{state.castleLevel} · {state.garrison}
-              </b>
-            </span>
-            <span>
-              {t('city')}{' '}
-              <b>
-                L{state.cityLevel} · {state.prosperity}
-              </b>
-            </span>
-          </div>
-          <EventLog state={state} t={t} />
-        </>
-      )}
+      {selected === 'manor' && <ManorManagementPanel state={state} setState={setState} t={t} />}
     </aside>
   );
 }

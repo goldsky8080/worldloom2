@@ -74,3 +74,45 @@ describe('fief gameplay lifecycle', () => {
     expect(screen.getByTestId('fief-aether-value')).toHaveTextContent('0.0');
   });
 });
+
+it('recruits a chosen count after time and reserves healthy subsets for standing defense', () => {
+  render(
+    <MemoryRouter>
+      <FiefPage />
+    </MemoryRouter>,
+  );
+  fireEvent.click(screen.getByRole('button', { name: '성', exact: true }));
+  fireEvent.change(screen.getByTestId('fief-recruit-count'), { target: { value: '10' } });
+  fireEvent.click(screen.getByTestId('fief-recruit'));
+  expect(screen.getByTestId('fief-healthy')).toHaveTextContent('40');
+  expect(screen.getByTestId('fief-treasury')).toHaveAttribute('data-value', '9750');
+  expect(screen.getByTestId('fief-recruit')).toBeDisabled();
+  act(() => vi.advanceTimersByTime(6000));
+  expect(screen.getByTestId('fief-healthy')).toHaveTextContent('50');
+  fireEvent.change(screen.getByTestId('fief-standing-count'), { target: { value: '51' } });
+  expect(screen.getByTestId('fief-standing-apply')).toBeDisabled();
+  fireEvent.change(screen.getByTestId('fief-standing-count'), { target: { value: '20' } });
+  fireEvent.click(screen.getByTestId('fief-standing-apply'));
+  expect(screen.getByTestId('fief-available')).toHaveTextContent('30');
+  expect(screen.getByTestId('fief-garrison')).toHaveTextContent('50 / 80');
+});
+it('tax and policies use cooldowns and slots without immediate state boosts', () => {
+  render(
+    <MemoryRouter>
+      <FiefPage />
+    </MemoryRouter>,
+  );
+  fireEvent.click(screen.getByRole('button', { name: '장원', exact: true }));
+  fireEvent.click(screen.getByTestId('fief-tax-high'));
+  expect(screen.getByTestId('fief-tax-low')).toBeDisabled();
+  expect(screen.getByTestId('fief-sentiment-value')).toHaveTextContent('70');
+  expect(screen.getByTestId('fief-prosperity-value')).toHaveTextContent('60');
+  fireEvent.click(screen.getByTestId('fief-policy-security_support'));
+  expect(screen.getByTestId('fief-policy-slots')).toHaveTextContent('1 / 1');
+  expect(screen.getByTestId('fief-policy-resident_relief')).toBeDisabled();
+  expect(screen.getByTestId('fief-treasury')).toHaveAttribute('data-value', '10000');
+  act(() => vi.advanceTimersByTime(20000));
+  expect(screen.getByTestId('fief-tax-low')).toBeEnabled();
+  fireEvent.click(screen.getByTestId('fief-policy-security_support'));
+  expect(screen.getByTestId('fief-policy-slots')).toHaveTextContent('0 / 1');
+});

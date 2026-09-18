@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { languageLabels, languages, setLanguage, type Language } from '../../services/localization';
 import { FiefMap } from './FiefMap';
-import { ContextPanel, duration } from './ContextPanel';
+import { ContextPanel } from './ContextPanel';
+import { duration, formatScore } from './presentation';
+import { stateBand } from './management';
 import { DeveloperPanel } from './DeveloperPanel';
 import { useFiefCopy } from './copy';
 import {
@@ -108,11 +110,32 @@ export function FiefPage() {
               ['prosperity', state.prosperity],
             ].map(([key, value]) => (
               <div key={key}>
-                <dt>{t(String(key))}</dt>
-                <dd data-testid={'fief-' + key + '-value'}>{value}</dd>
+                <dt>
+                  {t(String(key))}{' '}
+                  <small className={'fief-state-tag ' + stateBand(Number(value))}>
+                    {t(stateBand(Number(value)))}
+                  </small>
+                </dt>
+                <dd data-testid={'fief-' + key + '-value'}>{formatScore(Number(value))}</dd>
               </div>
             ))}
           </dl>
+          <div className="fief-hud-risks">
+            <div>
+              <span>{t('aetherShort')}</span>
+              <strong data-testid="fief-hud-aether">
+                {formatScore(state.aether)}
+                <small> / 100</small>
+              </strong>
+            </div>
+            <div>
+              <span>{t('saturation')}</span>
+              <strong data-testid="fief-hud-saturation">
+                {formatScore(state.monsterSaturation)}
+                <small> / 100</small>
+              </strong>
+            </div>
+          </div>
           <div className="fief-hud-grade">
             <span>{t('grade')}</span>
             <strong data-testid="fief-grade">{state.grade}</strong>

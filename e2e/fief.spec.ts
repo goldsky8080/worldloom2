@@ -69,11 +69,11 @@ test('city grade ranges apply on the next cycle, forecast and castle independenc
   await expect(page.getByTestId('fief-grade')).toHaveText('S');
   await page.getByTestId('fief-dev-toggle').click();
   await page.getByRole('button', { name: '성', exact: true }).click();
-  await expect(page.locator('.fief-capacity')).toContainText('방어 여력 부족');
+  await expect(page.getByTestId('fief-garrison')).toHaveText('40 / 80');
   await page.getByTestId('fief-dev-toggle').click();
   await page.getByRole('combobox', { name: '성 레벨 · 테스트', exact: true }).selectOption('5');
   await expect(page.getByTestId('fief-grade')).toHaveText('S');
-  await expect(page.locator('.fief-capacity')).toContainText('관리 여력 있음');
+  await expect(page.getByTestId('fief-garrison')).toHaveText('40 / 240');
   await city.selectOption('1');
   await page.getByTestId('fief-dev-toggle').click();
   await page.getByRole('button', { name: '영지 던전', exact: true }).click();

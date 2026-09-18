@@ -84,11 +84,11 @@ treasury|영지 금고|Treasury|領地金庫|领地金库|Ngân khố
 sentiment|민심|Public sentiment|民心|民心|Lòng dân
 security|치안|Security|治安|治安|An ninh
 prosperity|번영|Prosperity|繁栄|繁荣|Thịnh vượng
-pressure|몬스터 압력|Monster pressure|モンスター圧力|怪物压力|Áp lực quái vật
-pressureStable|외곽 안정|Perimeter stable|外縁安定|外围稳定|Vùng ngoài ổn định
-pressureRising|몬스터 활동 증가|Monster activity rising|活動増加|怪物活动增加|Quái vật tăng hoạt động
-pressureDanger|외곽 위험|Perimeter danger|外縁危険|外围危险|Vùng ngoài nguy hiểm
-pressureCritical|외곽 매우 위험|Perimeter critical|外縁非常に危険|外围极度危险|Vùng ngoài nguy cấp
+saturation|몬스터 포화도|Monster saturation|モンスター圧力|怪物压力|Áp lực quái vật
+saturationStable|외곽 안정|Perimeter stable|外縁安定|外围稳定|Vùng ngoài ổn định
+saturationRising|몬스터 활동 증가|Monster activity rising|活動増加|怪物活动增加|Quái vật tăng hoạt động
+saturationDanger|외곽 위험|Perimeter danger|外縁危険|外围危险|Vùng ngoài nguy hiểm
+saturationCritical|외곽 매우 위험|Perimeter critical|外縁非常に危険|外围极度危险|Vùng ngoài nguy cấp
 garrison|주둔군|Garrison|駐屯軍|驻军|Đồn trú
 recruit|병사 모집|Recruit soldiers|兵士募集|招募士兵|Tuyển quân
 patrol|던전 주변 순찰|Patrol dungeon perimeter|ダンジョン外縁巡回|巡逻地下城外围|Tuần tra quanh hầm ngục
@@ -118,7 +118,7 @@ cityDamaged|도시 피해 발생|City damaged|都市に被害|城市受损|Đô 
 cityCalm|도시 안정|City stable|都市安定|城市稳定|Đô thị ổn định
 calm|영지 평온|Fief at peace|領地平穏|领地平静|Lãnh địa yên bình
 aetherWarning|던전 내부 위험 상승|Dungeon aether danger|内部危険増加|地下城内部危险增加|Nguy cơ aether tăng
-pressureWarning|던전 외곽 몬스터 위험|Monsters threaten the perimeter|外縁モンスター危険|地下城外围怪物危险|Quái đe dọa vùng ngoài
+saturationWarning|던전 외곽 몬스터 위험|Monsters threaten the perimeter|外縁モンスター危険|地下城外围怪物危险|Quái đe dọa vùng ngoài
 securityWarning|치안 회복 필요|Security needs attention|治安改善が必要|需要改善治安|An ninh cần cải thiện
 warnings|현재 경고|Active warnings|現在の警告|当前警报|Cảnh báo hiện tại
 cityStatus|도시 상태|City condition|都市の状態|城市状态|Tình trạng đô thị
@@ -136,18 +136,111 @@ devNote|테스트 수치 · 운영 밸런스 미확정|Test values · production
 devBreak|던전 폭주 발생시키기|Trigger dungeon break|暴走を発生|触发地下城暴走|Kích hoạt bùng phát
 devInstantRaid|즉시 공략 · 테스트|Instant raid · test|即時攻略 · 試験|即时攻略 · 测试|Đột kích tức thì · thử
 devAether|에테르 +20|Aether +20|エーテル +20|以太 +20|Aether +20
-devPressure|몬스터 압력 +20|Monster pressure +20|モンスター圧力 +20|怪物压力 +20|Áp lực quái +20
+devSaturation|몬스터 포화도 +20|Monster saturation +20|モンスター圧力 +20|怪物压力 +20|Áp lực quái +20
 devTreasury|금고 +5000|Treasury +5000|金庫 +5000|金库 +5000|Ngân khố +5000
 close|닫기|Close|閉じる|关闭|Đóng
 grade|던전 등급|Dungeon grade|ダンジョン等級|地下城等级|Hạng hầm ngục
 cycleShort|다음 주기|Next cycle|次の周期|下个周期|Chu kỳ sau
 prototypeShort|영지 플레이 프로토타입|Fief gameplay prototype|領地プレイ試作|领地玩法原型|Nguyên mẫu chơi lãnh địa
 noEvents|아직 사건이 없습니다.|No events yet.|事件なし。|暂无事件。|Chưa có sự kiện.`;
+const managementRows = `saturation|몬스터 포화도|Monster saturation|モンスター飽和度|怪物饱和度|Độ bão hòa quái vật
+devSaturation|포화도 +20|Saturation +20|飽和度 +20|饱和度 +20|Bão hòa +20
+devSaturationDown|포화도 −20|Saturation −20|飽和度 −20|饱和度 −20|Bão hòa −20
+prosperity|번영도|Prosperity|繁栄度|繁荣度|Thịnh vượng
+recruit|모병|Recruitment|募兵|募兵|Tuyển quân
+living|생존 병력 · 수용 한도|Living soldiers · capacity|生存兵力 · 定員|存活兵力 · 容量|Quân sống · sức chứa
+healthy|정상|Healthy|正常|健康|Khỏe
+wounded|부상|Wounded|負傷|受伤|Bị thương
+dead|누적 전사|Dead total|累計戦死|累计阵亡|Tổng tử trận
+available|성 방어 가용|Available defense|城防衛可能|可用城防兵力|Quân phòng thủ khả dụng
+standingAssigned|상시 배치|Standing assigned|常設配置|常驻派遣|Thường trực đã bố trí
+emergencyAssigned|긴급 배치|Emergency assigned|緊急配置|紧急派遣|Khẩn cấp đã bố trí
+standing|상시 토벌대|Standing suppression force|常設討伐隊|常驻讨伐队|Đội trấn áp thường trực
+assignedCount|배치 인원|Assigned soldiers|配置人数|派遣人数|Số quân bố trí
+applyAssignment|배치 적용|Apply assignment|配置適用|应用派遣|Áp dụng bố trí
+standingHint|반복 출격 없이 포화도를 억제합니다. 부상·전사로 배치 인원이 줄 수 있습니다.|Automatically suppresses saturation. Wounds and deaths reduce assigned troops.|自動で飽和度を抑制。負傷・戦死で人数が減ります。|自动压制饱和度。伤亡会减少派遣兵力。|Tự động giảm bão hòa. Thương vong làm giảm quân bố trí.
+suppressionEffect|현재 억제량|Current suppression|現在の抑制量|当前压制量|Mức trấn áp hiện tại
+casualties|누적 토벌 손실|Suppression casualties|累計討伐損失|累计讨伐伤亡|Thương vong trấn áp
+recruitCount|모집 인원|Recruit count|募集人数|招募人数|Số quân tuyển
+maxCount|1회 최대|Maximum per job|一回の上限|单次上限|Tối đa mỗi đợt
+recruitStart|모병 시작|Start recruitment|募兵開始|开始募兵|Bắt đầu tuyển
+recruiting|모병 진행 중|Recruiting|募兵中|募兵进行中|Đang tuyển quân
+recruited|모병 완료|Recruitment completed|募兵完了|募兵完成|Tuyển quân hoàn tất
+recruitReady|모병 대기|Ready to recruit|募兵待機|待命募兵|Sẵn sàng tuyển
+invalidCount|가용 병력과 인원 범위를 확인하세요.|Check available troops and count limits.|兵力と人数の範囲を確認。|请检查可用兵力和人数范围。|Kiểm tra quân khả dụng và giới hạn.
+emergency|긴급 토벌대|Emergency suppression force|緊急討伐隊|紧急讨伐队|Đội trấn áp khẩn cấp
+deployCount|투입 인원|Deployment count|投入人数|投入人数|Số quân triển khai
+emergencyStart|긴급 토벌 출격|Deploy emergency force|緊急討伐出撃|派出紧急讨伐队|Triển khai đội khẩn cấp
+emergencyProgress|긴급 토벌 중|Emergency suppression in progress|緊急討伐中|紧急讨伐进行中|Đang trấn áp khẩn cấp
+emergencyDone|긴급 토벌 완료|Emergency suppression completed|緊急討伐完了|紧急讨伐完成|Trấn áp khẩn cấp hoàn tất
+emergencyReady|긴급 토벌 대기|Emergency force ready|緊急討伐待機|紧急讨伐待命|Đội khẩn cấp sẵn sàng
+emergencyHint|성 방어 가용 병력만 투입합니다. 빠르게 포화도를 낮추지만 부상·전사가 더 많습니다.|Uses available defense troops. Faster suppression brings heavier casualties.|防衛可能兵のみ投入。速い討伐には多くの損失。|仅投入可用城防兵力。快速压制伴随更大伤亡。|Dùng quân khả dụng. Trấn áp nhanh hơn nhưng thương vong cao hơn.
+soldierRecovery|부상병 회복|Wounded recovery|負傷兵回復|伤兵恢复|Hồi phục thương binh
+nextRecovery|다음 복귀까지|Next return in|次の復帰まで|下次归队倒计时|Lần trở lại tiếp theo
+noWounded|회복 대기 중인 부상병이 없습니다.|No wounded soldiers awaiting recovery.|回復待ちの負傷兵なし。|没有等待恢复的伤兵。|Không có thương binh chờ hồi phục.
+recoveryHint|부상병은 자동 회복합니다. 전사자는 모병으로 충원해야 합니다.|Wounded soldiers recover automatically. Replace the dead through recruitment.|負傷兵は自動回復。戦死者は募兵で補充。|伤兵自动恢复。阵亡兵力需通过募兵补充。|Thương binh tự hồi phục. Tuyển quân để bù tử trận.
+taxPolicy|세금 정책|Tax policy|税制|税收政策|Chính sách thuế
+taxLOW|낮은 세율|Low tax|低税率|低税率|Thuế thấp
+taxNORMAL|보통 세율|Normal tax|標準税率|普通税率|Thuế thường
+taxHIGH|높은 세율|High tax|高税率|高税率|Thuế cao
+cooldown|변경 대기|Change cooldown|変更待機|变更冷却|Chờ thay đổi
+changeReady|변경 가능|Change available|変更可能|可变更|Có thể thay đổi
+taxHint|낮은 세율은 회복을 돕고, 높은 세율은 세입을 늘리지만 민심·번영도에 장기 부담을 줍니다.|Low tax helps recovery. High tax raises revenue but burdens sentiment and prosperity over time.|低税は回復支援。高税は増収だが民心と繁栄に長期負担。|低税有利于恢复。高税增加税收，但长期影响民心和繁荣度。|Thuế thấp giúp hồi phục. Thuế cao tăng thu nhưng gây áp lực lâu dài.
+activePolicies|활성 정책|Active policies|有効な政策|生效政策|Chính sách đang hoạt động
+policyActive|활성|Active|有効|生效|Hoạt động
+policyInactive|비활성|Inactive|無効|未生效|Không hoạt động
+policyLocked|미해금|Locked|未解放|未解锁|Chưa mở
+unlockLevel|해금 장원|Manor unlock|解放荘園|解锁庄园等级|Cấp trang viên mở
+RESIDENT_RELIEF|주민 지원|Resident relief|住民支援|居民援助|Hỗ trợ cư dân
+COMMERCE_SUPPORT|상업 지원|Commerce support|商業支援|商业援助|Hỗ trợ thương mại
+SECURITY_SUPPORT|치안 지원|Security support|治安支援|治安援助|Hỗ trợ an ninh
+RECRUITMENT_SUPPORT|모병 지원|Recruitment support|募兵支援|募兵援助|Hỗ trợ tuyển quân
+RECONSTRUCTION|재건 지원|Reconstruction|復興支援|重建援助|Tái thiết
+RESIDENT_RELIEFHint|안정 후 민심 회복을 돕습니다.|Supports sentiment recovery after stability.|安定後の民心回復支援。|稳定后促进民心恢复。|Giúp lòng dân hồi phục sau ổn định.
+COMMERCE_SUPPORTHint|안정 후 번영도 회복을 돕습니다.|Supports prosperity recovery after stability.|安定後の繁栄回復支援。|稳定后促进繁荣度恢复。|Giúp thịnh vượng hồi phục sau ổn định.
+SECURITY_SUPPORTHint|안전권에서 치안 회복을 돕습니다.|Supports security recovery in safe conditions.|安全時の治安回復支援。|安全时促进治安恢复。|Giúp an ninh hồi phục khi an toàn.
+RECRUITMENT_SUPPORTHint|새 모병 작업의 비용과 시간을 줄입니다.|Reduces cost and time for new recruitment jobs.|新規募兵の費用と時間を削減。|减少新募兵任务的费用和时间。|Giảm phí và thời gian đợt tuyển mới.
+RECONSTRUCTIONHint|사고 후 안정되면 세 상태의 회복을 돕습니다.|Supports all three recoveries once conditions stabilize after incidents.|事故後の安定時に全状態の回復支援。|事故后稳定时促进三项状态恢复。|Giúp cả ba trạng thái hồi phục sau sự cố khi ổn định.
+policyFundingHint|정책은 유지비가 듭니다. 결산 시 비용이 부족하면 활성 정책을 모두 중지합니다.|Policies require upkeep. Insufficient funds at settlement stop all active policies.|政策は維持費が必要。精算時の不足で全政策停止。|政策需要维护费。结算资金不足时停止所有生效政策。|Chính sách tốn phí duy trì. Thiếu quỹ khi quyết toán sẽ dừng tất cả.
+taxRevenue|예상 세입|Estimated tax revenue|予想税収|预计税收|Thuế thu dự kiến
+soldierUpkeep|병력 유지비|Soldier upkeep|兵力維持費|兵力维护费|Phí duy trì quân
+policyUpkeep|정책 유지비|Policy upkeep|政策維持費|政策维护费|Phí duy trì chính sách
+nextEconomyTick|다음 결산|Next settlement|次の精算|下次结算|Quyết toán tiếp theo
+lastSettlement|최근 결산|Last settlement|前回精算|最近结算|Quyết toán gần nhất
+stateStable|안정|Stable|安定|稳定|Ổn định
+stateCaution|주의|Caution|注意|注意|Chú ý
+stateUnrest|불안|Unsettled|不安|不安|Bất ổn
+stateCrisis|위기|Crisis|危機|危机|Khủng hoảng
+stateHint|포화도를 오래 방치하면 치안부터 손상됩니다. 원인을 해결한 뒤 안정 기간을 유지해야 서서히 회복합니다.|Prolonged saturation harms security first. Resolve threats and maintain stability for gradual recovery.|飽和を放置すると治安から悪化。脅威解消後の安定期間で徐々に回復。|长期放任饱和会先损害治安。消除威胁并保持稳定后逐步恢复。|Bão hòa kéo dài hại an ninh trước. Giải quyết nguy cơ và giữ ổn định để hồi phục dần.
+cityEconomyHint|도시 레벨과 번영도가 세입 잠재력을 결정합니다. 시설 성장은 DEV에서만 시험합니다.|City level and prosperity determine tax potential. Building growth is tested in DEV.|都市レベルと繁栄が税収力を決定。成長はDEVで試験。|城市等级和繁荣度决定税收潜力。设施升级仅在DEV中测试。|Cấp đô thị và thịnh vượng quyết định tiềm năng thuế. Tăng cấp được thử trong DEV.
+woundedWarning|부상병 회복 대기|Wounded awaiting recovery|負傷兵の回復待ち|伤兵等待恢复|Thương binh chờ hồi phục
+defenseWarning|성 방어 가용 병력 없음|No available defense troops|防衛可能兵なし|无可用城防兵力|Không có quân phòng thủ khả dụng
+fundingWarning|운영 자금 부족|Operating funds insufficient|運営資金不足|运营资金不足|Thiếu quỹ vận hành
+recruitStartedEvent|모병 시작|Recruitment started|募兵開始|开始募兵|Bắt đầu tuyển quân
+standingChangedEvent|상시 토벌 배치 변경|Standing assignment changed|常設配置変更|常驻派遣变更|Đổi bố trí thường trực
+standingCasualtyEvent|상시 토벌 부상·전사|Standing suppression casualties|常設討伐損失|常驻讨伐伤亡|Thương vong thường trực
+emergencyStartedEvent|긴급 토벌 출격|Emergency force deployed|緊急討伐出撃|紧急讨伐出击|Đội khẩn cấp xuất phát
+emergencyCompleteEvent|긴급 토벌 완료·병력 복귀|Emergency completed · survivors returned|緊急討伐完了・生存者復帰|紧急讨伐完成·生还兵力归队|Hoàn tất khẩn cấp · quân sống trở lại
+soldiersRecoveredEvent|부상병 정상 복귀|Wounded returned healthy|負傷兵正常復帰|伤兵恢复归队|Thương binh hồi phục trở lại
+taxChangedEvent|세금 정책 변경|Tax policy changed|税制変更|税收政策变更|Đổi chính sách thuế
+policyChangedEvent|활성 정책 변경|Active policy changed|政策変更|生效政策变更|Đổi chính sách hoạt động
+policySuspendedEvent|자금 부족·정책 중지|Insufficient funds · policies stopped|資金不足・政策停止|资金不足·政策停止|Thiếu quỹ · dừng chính sách
+economyTickEvent|세입·유지비 결산|Revenue and upkeep settled|税収・維持費精算|税收·维护费结算|Quyết toán thu và chi
+manorLevel|장원 레벨 · 테스트|Manor level · test|荘園レベル · 試験|庄园等级 · 测试|Cấp trang viên · thử
+aetherShort|내부 에테르|Internal aether|内部エーテル|内部以太|Aether bên trong
+devStates|영지 상태 30 · 테스트|Territory states 30 · test|領地状態30 · 試験|领地状态30 · 测试|Trạng thái lãnh địa 30 · thử`;
+const recoveryRows = `devEmptyTreasury|금고 비우기 · 테스트|Empty treasury · test|金庫を空に · 試験|清空金库 · 测试|Rút hết ngân khố · thử
+recoveryStatus|영지 회복|Territory recovery|領地回復|领地恢复|Hồi phục lãnh địa
+recovering|점진 회복 중|Recovering gradually|徐々に回復中|逐步恢复中|Đang hồi phục dần
+stabilityWait|안정 유지|Maintain stability|安定維持|保持稳定|Duy trì ổn định
+recoveryBlocked|위험·병력·안정 조건 대기|Waiting for safety, troops and stability|安全・兵力・安定条件待ち|等待安全、兵力和稳定条件|Chờ điều kiện an toàn, quân lực và ổn định`;
 const entries = Object.fromEntries(
-  (rows + '\n' + gameplayRows).split('\n').map((row) => {
-    const [key, ...values] = row.split('|');
-    return [key, values];
-  }),
+  (rows + '\n' + gameplayRows + '\n' + managementRows + '\n' + recoveryRows)
+    .split('\n')
+    .map((row) => {
+      const [key, ...values] = row.split('|');
+      return [key, values];
+    }),
 );
 export function useFiefCopy() {
   const { language } = useTranslation();

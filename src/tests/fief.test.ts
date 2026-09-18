@@ -87,7 +87,7 @@ describe('instance fief prototype', () => {
     expect(next.aether).toBe(s.aether);
     expect(next.elapsed).toBe(0);
     expect(s.cycle).toBe(1);
-    expect(s.log).toHaveLength(0);
+    expect(s.log.map((entry) => entry.kind)).toEqual(['economyTick']);
   });
   it('progresses through provisional danger thresholds', () => {
     expect([0, 34.9, 35, 64.9, 65, 84.9, 85, 99.9, 100].map(dungeonStatus)).toEqual([

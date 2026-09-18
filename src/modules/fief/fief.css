@@ -1031,19 +1031,19 @@
   font-size: 9px;
   margin-top: 6px;
 }
-.meter-pressure strong {
+.meter-saturation strong {
   color: #cf9b77;
 }
-.status-pressureStable {
+.status-saturationStable {
   color: #9ba9c0;
 }
-.status-pressureRising {
+.status-saturationRising {
   color: #b2a0cb;
 }
-.status-pressureDanger {
+.status-saturationDanger {
   color: #dca27c;
 }
-.status-pressureCritical {
+.status-saturationCritical {
   color: #ec8f72;
 }
 .fief-cycle-summary {
@@ -1281,7 +1281,7 @@
   color: #d9c37e;
   font-size: 16px;
 }
-.pressure-marker {
+.saturation-marker {
   opacity: 0.82;
 }
 .wave-marker {
@@ -1579,5 +1579,290 @@
   }
   .fief-gameplay * {
     scroll-behavior: auto !important;
+  }
+}
+
+/* v0.3 military and administration; map and facility context remain the layout. */
+.fief-gameplay .fief-hud {
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.fief-gameplay .fief-hud dl {
+  gap: 24px;
+}
+.fief-hud-risks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.fief-hud-risks span {
+  display: block;
+  color: #a5b294;
+  font-size: 10px;
+}
+.fief-hud-risks strong {
+  display: block;
+  margin-top: 6px;
+  font:
+    20px Georgia,
+    serif;
+  color: #d2bd85;
+}
+.fief-hud-risks small {
+  font: 10px system-ui;
+  color: #9dab91;
+}
+.fief-state-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 400;
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin-left: 3px;
+}
+.stateStable {
+  color: #b5c995;
+  background: #7c966622;
+}
+.stateCaution {
+  color: #d9c387;
+  background: #b0995322;
+}
+.stateUnrest {
+  color: #e8ac76;
+  background: #a7633322;
+}
+.stateCrisis {
+  color: #ee967a;
+  background: #a349392a;
+}
+.fief-soldier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px 8px;
+  margin: 18px 0;
+}
+.fief-soldier-grid dt {
+  font-size: 10px;
+  color: #9aab8c;
+}
+.fief-soldier-grid dd {
+  margin: 5px 0 0;
+  font:
+    22px Georgia,
+    serif;
+  color: #d5d8c3;
+}
+.fief-management-section {
+  border-top: 1px solid #77875836;
+  margin-top: 20px;
+  padding-top: 14px;
+}
+.fief-management-section h3 {
+  font-size: 12px;
+  color: #c9bb93;
+  margin: 0 0 12px;
+}
+.fief-management-section h3 > span {
+  float: right;
+  font-weight: 400;
+  color: #a4b58b;
+}
+.fief-management-section > [role='status'] {
+  font-size: 11px;
+  color: #b7c397;
+  margin: 9px 0;
+}
+.fief-management-section > small {
+  font-size: 10px;
+  color: #9fae8f;
+}
+.fief-count-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: #b8c3a1;
+}
+.fief-count-control input {
+  width: 90px;
+  min-height: 44px;
+  background: #14241d;
+  border: 1px solid #7a875846;
+  border-radius: 3px;
+  padding: 9px 10px;
+  color: #dddfca;
+  font-size: 15px;
+}
+.fief-count-control input:focus-visible {
+  outline: 2px solid #c5b071;
+  outline-offset: 2px;
+}
+.fief-count-control input:disabled {
+  opacity: 0.55;
+}
+.fief-quote {
+  font-size: 10px;
+  color: #a8b397;
+  line-height: 1.7;
+}
+.fief-tax-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+.fief-tax-options button {
+  min-height: 44px;
+  border: 1px solid #73835c55;
+  border-radius: 3px;
+  background: #243428;
+  color: #c8cbb1;
+  padding: 6px 3px;
+  font-size: 11px;
+}
+.fief-tax-options button[aria-pressed='true'] {
+  border-color: #c1ac70;
+  color: #d5bd7d;
+  opacity: 1;
+  background: #625e3922;
+}
+.fief-policy-list {
+  display: grid;
+  gap: 9px;
+}
+.fief-policy-card {
+  border: 1px solid #74835835;
+  border-radius: 4px;
+  padding: 10px;
+}
+.fief-policy-card.is-active {
+  border-color: #a4ac7066;
+  background: #7e925414;
+}
+.fief-policy-card button {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  min-height: 44px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #c8cfb4;
+  text-align: left;
+  align-items: center;
+}
+.fief-policy-card button strong {
+  font-size: 12px;
+}
+.fief-policy-card button span {
+  font-size: 9px;
+  color: #b7bd8c;
+}
+.fief-policy-card p {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #a8b294;
+  margin: 3px 0 6px;
+}
+.fief-policy-card small {
+  font-size: 9px;
+  color: #adac82;
+}
+.fief-economy-report,
+.fief-state-report {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.fief-economy-report > div,
+.fief-state-report > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+}
+.fief-economy-report dt,
+.fief-state-report dt {
+  color: #a5b18f;
+}
+.fief-economy-report dd,
+.fief-state-report dd {
+  margin: 0;
+  color: #ccd1b1;
+  text-align: right;
+  font-size: 11px;
+}
+.emergency-marker small {
+  background: #744e27;
+  border: 1px solid #ddbc78;
+}
+.fief-dev-levels {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1100px) and (min-width: 701px) {
+  .fief-hud-risks {
+    order: 5;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid #78865533;
+    padding-top: 10px;
+  }
+  .fief-hud-risks > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .fief-hud-risks strong {
+    margin: 0;
+  }
+  .fief-gameplay .fief-context {
+    max-height: calc(100dvh - 300px);
+  }
+}
+@media (max-width: 700px) {
+  .fief-gameplay .fief-hud {
+    gap: 12px;
+  }
+  .fief-hud-risks {
+    order: 5;
+    width: 100%;
+    border-top: 1px solid #78865533;
+    padding-top: 10px;
+    gap: 12px;
+  }
+  .fief-hud-risks > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+  }
+  .fief-hud-risks strong {
+    font-size: 17px;
+    margin: 0;
+    white-space: nowrap;
+  }
+  .fief-hud-risks span {
+    font-size: 9px;
+  }
+  .fief-state-tag {
+    font-size: 8px;
+    display: block;
+    margin: 3px 0 0;
+    width: fit-content;
+  }
+  .fief-policy-card button,
+  .fief-action,
+  .fief-tax-options button {
+    min-height: 44px;
+  }
+  .fief-state-report .fief-state-tag {
+    display: inline-block;
+    margin: 0 0 0 4px;
+  }
+  .fief-dev-levels {
+    grid-template-columns: 1fr;
   }
 }

@@ -6,65 +6,76 @@ import {
   applyWaveDamage,
   completeDirectRaid,
   completeDungeonContract,
-  completePatrol,
+  completeEmergency,
   devAdjustAether,
   garrisonCapacity,
-  increaseMonsterPressure,
+  increaseMonsterSaturation,
   initialFief,
   postDungeonContract,
-  pressureMarkerCount,
+  saturationMarkerCount,
   raidDungeon,
   recruitSoldiers,
   setFacilityLevel,
   startDirectRaid,
-  startPatrol,
+  startEmergency,
   triggerDungeonBreak,
 } from '../modules/fief/model';
 describe('fief gameplay state transitions', () => {
-  it('increases pressure with time and grade, independently of internal aether', () => {
+  it('increases saturation with time and grade, independently of internal aether', () => {
     const s = initialFief(),
       strong = { ...s, grade: 'S' as const };
-    expect(advanceFief(s, 10).monsterPressure).toBeCloseTo(
-      s.monsterPressure + 10 * C.pressure.basePerSecond,
+    expect(advanceFief(s, 10).monsterSaturation).toBeCloseTo(
+      s.monsterSaturation + 10 * C.saturation.basePerSecond,
     );
-    expect(advanceFief(strong, 10).monsterPressure).toBeGreaterThan(
-      advanceFief(s, 10).monsterPressure,
+    expect(advanceFief(strong, 10).monsterSaturation).toBeGreaterThan(
+      advanceFief(s, 10).monsterSaturation,
     );
-    expect(increaseMonsterPressure(s, 200).monsterPressure).toBe(100);
-    expect(advanceFief(increaseMonsterPressure(s, 200), 1).breaks).toBe(0);
-    expect(pressureMarkerCount(100)).toBeGreaterThan(pressureMarkerCount(34));
+    expect(increaseMonsterSaturation(s, 200).monsterSaturation).toBe(100);
+    expect(advanceFief(increaseMonsterSaturation(s, 200), 1).breaks).toBe(0);
+    expect(saturationMarkerCount(100)).toBeGreaterThan(saturationMarkerCount(34));
   });
-  it('recruits paid soldiers up to capacity and rejects shortages without charging', () => {
+  it('starts paid timed recruitment up to capacity and rejects shortages without charging', () => {
     const s = initialFief(),
       recruited = recruitSoldiers(s);
-    expect(recruited.treasury).toBe(s.treasury - C.castle.recruitCost);
-    expect(recruited.garrison).toBe(s.garrison + C.castle.recruitCount);
+    expect(recruited.treasury).toBe(s.treasury - 20 * C.recruitment.costPerSoldier);
+    expect(recruited.soldiers.healthy).toBe(s.soldiers.healthy);
+    expect(advanceFief(recruited, recruited.recruitmentState.duration).soldiers.healthy).toBe(
+      s.soldiers.healthy + 20,
+    );
     expect(s.treasury).toBe(C.initial.treasury);
-    const full = { ...s, garrison: garrisonCapacity(s) };
+    const full = { ...s, soldiers: { ...s.soldiers, healthy: garrisonCapacity(s) } };
     expect(recruitSoldiers(full)).toBe(full);
-    const poor = { ...s, treasury: C.castle.recruitCost - 1 };
+    const poor = { ...s, treasury: 20 * C.recruitment.costPerSoldier - 1 };
     expect(recruitSoldiers(poor)).toBe(poor);
-    const large = setFacilityLevel({ ...s, garrison: 200 }, 'castle', 1);
-    expect(large.garrison).toBe(garrisonCapacity(large));
+    const large = {
+      ...setFacilityLevel(s, 'castle', 5),
+      soldiers: { ...s.soldiers, healthy: 200 },
+    };
+    expect(setFacilityLevel(large, 'castle', 1)).toBe(large);
   });
-  it('charges a patrol once and its completion lowers only external pressure', () => {
-    const s = increaseMonsterPressure(initialFief(), 60),
-      patrol = startPatrol(s);
-    expect(patrol.treasury).toBe(s.treasury - C.patrol.cost);
-    expect(startPatrol(patrol)).toBe(patrol);
-    expect(completePatrol(patrol)).toBe(patrol);
-    const ready = { ...patrol, patrolState: { ...patrol.patrolState, elapsed: C.patrol.duration } };
-    const done = completePatrol(ready);
-    expect(done.monsterPressure).toBe(ready.monsterPressure - C.patrol.reduction);
+  it('charges emergency suppression once and completion lowers only external saturation', () => {
+    const s = increaseMonsterSaturation(initialFief(), 60),
+      patrol = startEmergency(s, 20);
+    expect(patrol.treasury).toBe(s.treasury - 20 * C.emergency.costPerSoldier);
+    expect(startEmergency(patrol, 20)).toBe(patrol);
+    expect(completeEmergency(patrol)).toBe(patrol);
+    const ready = {
+      ...patrol,
+      emergencyState: { ...patrol.emergencyState, elapsed: C.emergency.duration },
+    };
+    const done = completeEmergency(ready);
+    expect(done.monsterSaturation).toBe(
+      ready.monsterSaturation - 20 * C.emergency.reductionPerSoldier,
+    );
     expect(done.aether).toBe(ready.aether);
-    expect(completePatrol(done)).toBe(done);
-    expect(advanceFief(patrol, 6).patrolState.status).toBe('SUCCEEDED');
+    expect(completeEmergency(done)).toBe(done);
+    expect(advanceFief(patrol, 6).emergencyState.status).toBe('SUCCEEDED');
   });
-  it('rejects patrols with insufficient money or soldiers', () => {
-    const poor = { ...initialFief(), treasury: C.patrol.cost - 1 };
-    expect(startPatrol(poor)).toBe(poor);
-    const empty = { ...initialFief(), garrison: 0 };
-    expect(startPatrol(empty)).toBe(empty);
+  it('rejects emergency suppression with insufficient money or soldiers', () => {
+    const poor = { ...initialFief(), treasury: 20 * C.emergency.costPerSoldier - 1 };
+    expect(startEmergency(poor, 20)).toBe(poor);
+    const empty = { ...initialFief(), soldiers: { ...initialFief().soldiers, healthy: 0 } };
+    expect(startEmergency(empty, 20)).toBe(empty);
   });
   it('direct raid prepares and progresses before changing aether; duplicate starts are inert', () => {
     const s = { ...initialFief(), aether: 70 },
@@ -114,13 +125,13 @@ describe('fief gameplay state transitions', () => {
     expect(done.log.filter((e) => e.kind === 'raid')).toHaveLength(1);
     expect(done.log.filter((e) => e.kind === 'contractComplete')).toHaveLength(1);
   });
-  it('aether reaching 100 creates one wave, with pressure controlling only its icon count', () => {
+  it('aether reaching 100 creates one wave, with saturation controlling only its icon count', () => {
     const s = devAdjustAether(initialFief(), 88);
     expect(s.breaks).toBe(1);
-    expect(s.waveState[0].count).toBe(3);
+    expect(s.waveState[0].count).toBe(4);
     expect(triggerDungeonBreak(s)).toBe(s);
     expect(advanceFief(s, 1).waveState).toHaveLength(1);
-    const high = triggerDungeonBreak(increaseMonsterPressure(initialFief(), 100));
+    const high = triggerDungeonBreak(increaseMonsterSaturation(initialFief(), 100));
     expect(high.waveState[0].count).toBe(5);
     expect(high.publicSentiment).toBe(s.publicSentiment);
   });
@@ -141,7 +152,7 @@ describe('fief gameplay state transitions', () => {
     expect(second.waveState).toHaveLength(2);
     expect(second.breaks).toBe(2);
     const done = advanceFief(second, 8);
-    expect(done.publicSentiment).toBe(60);
+    expect(done.publicSentiment).toBeCloseTo(60 - 8 * C.territory.damage.sentiment);
     expect(done.waveState.every((w) => w.damageApplied)).toBe(true);
     expect(new Set(done.waveState.map((w) => w.id)).size).toBe(2);
   });
@@ -153,8 +164,9 @@ describe('fief gameplay state transitions', () => {
     expect(later.publicSentiment).toBe(70);
   });
   it('a large time step matches small steps across simultaneous actions, waves and cycles', () => {
-    let start = startPatrol(
-      startDirectRaid(postDungeonContract({ ...initialFief(), aether: 90, monsterPressure: 80 })),
+    let start = startEmergency(
+      startDirectRaid(postDungeonContract({ ...initialFief(), aether: 90, monsterSaturation: 80 })),
+      20,
     );
     start = triggerDungeonBreak(start);
     const large = advanceFief(start, 140);
@@ -165,7 +177,6 @@ describe('fief gameplay state transitions', () => {
       large.grade,
       large.breaks,
       large.treasury,
-      large.publicSentiment,
       large.contractsSucceeded,
       large.raids,
     ]).toEqual([
@@ -173,12 +184,12 @@ describe('fief gameplay state transitions', () => {
       small.grade,
       small.breaks,
       small.treasury,
-      small.publicSentiment,
       small.contractsSucceeded,
       small.raids,
     ]);
+    expect(large.publicSentiment).toBeCloseTo(small.publicSentiment);
     expect(large.aether).toBeCloseTo(small.aether);
-    expect(large.monsterPressure).toBeCloseTo(small.monsterPressure);
+    expect(large.monsterSaturation).toBeCloseTo(small.monsterSaturation);
     expect(large.log.map((e) => e.kind)).toEqual(small.log.map((e) => e.kind));
   });
   it('damage stats clamp at zero and old wave history remains bounded without dropping active waves', () => {

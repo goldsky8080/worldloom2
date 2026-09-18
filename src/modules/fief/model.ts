@@ -1,3 +1,16 @@
+import { recordFief as record } from './history';
+import {
+  initialManagement,
+  advanceManagement,
+  finishManagement,
+  managementBoundary,
+  resetStability,
+  availableGarrison,
+  garrisonCapacity,
+  policySlots,
+  type ManagementState,
+} from './management';
+export * from './management';
 import { PROTOTYPE_CONFIG as CONFIG } from './config';
 export { PROTOTYPE_CONFIG } from './config';
 export const GRADES = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
@@ -6,8 +19,8 @@ export type Facility = 'castle' | 'city' | 'manor' | 'dungeon';
 export type Level = 1 | 2 | 3 | 4 | 5;
 export type TestMode = 'accelerated' | 'design';
 export type DungeonStatus = 'stable' | 'unstable' | 'danger' | 'critical' | 'break';
-export const DESIGN_CYCLE_SECONDS = 21 * 24 * 60 * 60;
-export const TEST_CYCLE_SECONDS = 120;
+export const DESIGN_CYCLE_SECONDS = CONFIG.cycle.designSeconds;
+export const TEST_CYCLE_SECONDS = CONFIG.cycle.testSeconds;
 export const TEST_RULES = {
   raidReduction: CONFIG.raid.reduction,
   forecastSeconds: CONFIG.forecast.testSeconds,
@@ -38,20 +51,19 @@ export function dungeonStatus(aether: number): DungeonStatus {
           ? 'unstable'
           : 'stable';
 }
-export function pressureStatus(pressure: number) {
-  return pressure >= CONFIG.pressure.critical
-    ? 'pressureCritical'
-    : pressure >= CONFIG.pressure.danger
-      ? 'pressureDanger'
-      : pressure >= CONFIG.pressure.rising
-        ? 'pressureRising'
-        : 'pressureStable';
+export function saturationStatus(saturation: number) {
+  return saturation >= CONFIG.saturation.critical
+    ? 'saturationCritical'
+    : saturation >= CONFIG.saturation.danger
+      ? 'saturationDanger'
+      : saturation >= CONFIG.saturation.rising
+        ? 'saturationRising'
+        : 'saturationStable';
 }
 export interface TimedState<S extends string> {
   status: S;
   elapsed: number;
 }
-export type PatrolState = TimedState<'NONE' | 'ON_PATROL' | 'SUCCEEDED'>;
 export type RaidState = TimedState<'NONE' | 'PREPARING' | 'IN_PROGRESS' | 'SUCCEEDED'>;
 export type ContractState = TimedState<
   'NONE' | 'POSTED' | 'ACCEPTED' | 'IN_PROGRESS' | 'SUCCEEDED'
@@ -70,8 +82,16 @@ export interface FiefLog {
     | 'raid'
     | 'break'
     | 'recruit'
-    | 'patrolStarted'
-    | 'patrolComplete'
+    | 'recruitStarted'
+    | 'standingChanged'
+    | 'standingCasualty'
+    | 'emergencyStarted'
+    | 'emergencyComplete'
+    | 'soldiersRecovered'
+    | 'taxChanged'
+    | 'policyChanged'
+    | 'policySuspended'
+    | 'economyTick'
     | 'raidStarted'
     | 'contractPosted'
     | 'contractAccepted'
@@ -81,12 +101,12 @@ export interface FiefLog {
   grade: DungeonGrade;
   aether: number;
 }
-export interface FiefState {
+export interface FiefState extends ManagementState {
   id: string;
   dungeonId: string;
   cityLevel: Level;
   castleLevel: Level;
-  manorLevel: 1;
+  manorLevel: Level;
   cycle: number;
   elapsed: number;
   grade: DungeonGrade;
@@ -100,10 +120,8 @@ export interface FiefState {
   publicSentiment: number;
   security: number;
   prosperity: number;
-  garrison: number;
-  monsterPressure: number;
+  monsterSaturation: number;
   breakActive: boolean;
-  patrolState: PatrolState;
   raidState: RaidState;
   contractState: ContractState;
   waveState: MonsterWave[];
@@ -125,8 +143,8 @@ export function initialFief(): FiefState {
     log: [],
     nextLogId: 1,
     ...CONFIG.initial,
+    ...initialManagement(),
     breakActive: false,
-    patrolState: { status: 'NONE', elapsed: 0 },
     raidState: { status: 'NONE', elapsed: 0 },
     contractState: { status: 'NONE', elapsed: 0 },
     waveState: [],
@@ -148,16 +166,6 @@ export function forecastReady(state: FiefState) {
     (state.mode === 'accelerated' ? CONFIG.forecast.testSeconds : CONFIG.forecast.designSeconds)
   );
 }
-function record(state: FiefState, kind: FiefLog['kind']): FiefState {
-  return {
-    ...state,
-    nextLogId: state.nextLogId + 1,
-    log: [
-      { id: state.nextLogId, kind, cycle: state.cycle, grade: state.grade, aether: state.aether },
-      ...state.log,
-    ].slice(0, CONFIG.logLimit),
-  };
-}
 const bounded = (value: number) => {
   const result = Math.min(100, Math.max(0, value));
   return result > 100 - 1e-8 ? 100 : result;
@@ -170,42 +178,33 @@ export function aetherRate(state: FiefState) {
     cycleDuration(state.mode)
   );
 }
-export function pressureRate(state: FiefState) {
-  return (
-    ((CONFIG.pressure.basePerSecond + GRADES.indexOf(state.grade) * CONFIG.pressure.perGrade) *
-      TEST_CYCLE_SECONDS) /
-    cycleDuration(state.mode)
-  );
-}
-export function pressureMarkerCount(pressure: number) {
-  return pressure >= CONFIG.pressure.critical
+export function saturationMarkerCount(saturation: number) {
+  return saturation >= CONFIG.saturation.critical
     ? 5
-    : pressure >= CONFIG.pressure.danger
+    : saturation >= CONFIG.saturation.danger
       ? 4
-      : pressure >= CONFIG.pressure.rising
+      : saturation >= CONFIG.saturation.rising
         ? 2
         : 0;
 }
 export function triggerDungeonBreak(state: FiefState): FiefState {
   if (state.breakActive) return state;
   const id = state.breaks + 1,
+    saturation = bounded(state.monsterSaturation + CONFIG.saturation.breakSpike),
     count =
-      state.monsterPressure >= CONFIG.pressure.danger
-        ? 5
-        : state.monsterPressure >= CONFIG.pressure.rising
-          ? 4
-          : 3;
+      saturation >= CONFIG.saturation.danger ? 5 : saturation >= CONFIG.saturation.rising ? 4 : 3;
   return record(
-    {
+    resetStability({
       ...state,
       aether: 100,
+      monsterSaturation: saturation,
       breakActive: true,
       breaks: id,
       waveState: [
         ...state.waveState,
         { id, status: 'TRAVELLING', elapsed: 0, count, damageApplied: false },
       ],
-    },
+    }),
     'break',
   );
 }
@@ -215,9 +214,9 @@ export function devAdjustAether(state: FiefState, amount: number): FiefState {
   const result = { ...state, aether, breakActive: aether >= 100 && state.breakActive };
   return aether >= 100 ? triggerDungeonBreak(result) : result;
 }
-export function increaseMonsterPressure(state: FiefState, amount: number): FiefState {
+export function increaseMonsterSaturation(state: FiefState, amount: number): FiefState {
   return Number.isFinite(amount)
-    ? { ...state, monsterPressure: bounded(state.monsterPressure + amount) }
+    ? { ...state, monsterSaturation: bounded(state.monsterSaturation + amount) }
     : state;
 }
 export function changeCycle(state: FiefState): FiefState {
@@ -234,60 +233,6 @@ export function raidDungeon(state: FiefState): FiefState {
       raids: state.raids + 1,
     },
     'raid',
-  );
-}
-export function garrisonCapacity(state: FiefState) {
-  return CONFIG.castle.baseCapacity + (state.castleLevel - 1) * CONFIG.castle.capacityPerLevel;
-}
-export function canRecruit(state: FiefState) {
-  return (
-    state.treasury >= CONFIG.castle.recruitCost &&
-    state.garrison + CONFIG.castle.recruitCount <= garrisonCapacity(state)
-  );
-}
-export function recruitSoldiers(state: FiefState): FiefState {
-  if (!canRecruit(state)) return state;
-  return record(
-    {
-      ...state,
-      treasury: state.treasury - CONFIG.castle.recruitCost,
-      garrison: state.garrison + CONFIG.castle.recruitCount,
-    },
-    'recruit',
-  );
-}
-export function canPatrol(state: FiefState) {
-  return (
-    state.patrolState.status !== 'ON_PATROL' &&
-    state.treasury >= CONFIG.patrol.cost &&
-    state.garrison >= CONFIG.patrol.requiredSoldiers &&
-    state.monsterPressure > 0
-  );
-}
-export function startPatrol(state: FiefState): FiefState {
-  if (!canPatrol(state)) return state;
-  return record(
-    {
-      ...state,
-      treasury: state.treasury - CONFIG.patrol.cost,
-      patrolState: { status: 'ON_PATROL', elapsed: 0 },
-    },
-    'patrolStarted',
-  );
-}
-export function completePatrol(state: FiefState): FiefState {
-  if (
-    state.patrolState.status !== 'ON_PATROL' ||
-    state.patrolState.elapsed + EPSILON < CONFIG.patrol.duration
-  )
-    return state;
-  return record(
-    {
-      ...state,
-      monsterPressure: Math.max(0, state.monsterPressure - CONFIG.patrol.reduction),
-      patrolState: { status: 'SUCCEEDED', elapsed: CONFIG.patrol.duration },
-    },
-    'patrolComplete',
   );
 }
 export function raidBusy(state: FiefState) {
@@ -363,7 +308,7 @@ export function applyWaveDamage(state: FiefState, waveId: number): FiefState {
   const wave = state.waveState.find((w) => w.id === waveId);
   if (!wave || wave.damageApplied || wave.elapsed + EPSILON < CONFIG.wave.duration) return state;
   return record(
-    {
+    resetStability({
       ...state,
       publicSentiment: bounded(state.publicSentiment - CONFIG.wave.sentimentDamage),
       security: bounded(state.security - CONFIG.wave.securityDamage),
@@ -373,7 +318,7 @@ export function applyWaveDamage(state: FiefState, waveId: number): FiefState {
           ? { ...w, status: 'ARRIVED', elapsed: CONFIG.wave.duration, damageApplied: true }
           : w,
       ),
-    },
+    }),
     'waveDamage',
   );
 }
@@ -396,7 +341,6 @@ function raidStageDuration(state: FiefState) {
 function finishEvents(state: FiefState): FiefState {
   let result = state;
   if (result.aether >= 100 && !result.breakActive) result = triggerDungeonBreak(result);
-  result = completePatrol(result);
   if (
     result.raidState.status === 'PREPARING' &&
     result.raidState.elapsed + EPSILON >= CONFIG.raid.preparation
@@ -411,6 +355,7 @@ function finishEvents(state: FiefState): FiefState {
     result = { ...result, contractState: { status: 'IN_PROGRESS', elapsed: 0 } };
   else result = completeDungeonContract(result);
   for (const wave of result.waveState) result = applyWaveDamage(result, wave.id);
+  result = finishManagement(result);
   // Preserve every active wave, while bounding only completed history.
   const completed = result.waveState
     .filter((w) => w.damageApplied)
@@ -433,9 +378,7 @@ export function advanceFief(state: FiefState, seconds: number): FiefState {
       left,
       remainingSeconds(result),
       timeToBreak,
-      result.patrolState.status === 'ON_PATROL'
-        ? CONFIG.patrol.duration - result.patrolState.elapsed
-        : Infinity,
+      managementBoundary(result),
       raidStageDuration(result) - result.raidState.elapsed,
       contractStageDuration(result) - result.contractState.elapsed,
       ...result.waveState
@@ -443,14 +386,9 @@ export function advanceFief(state: FiefState, seconds: number): FiefState {
         .map((w) => CONFIG.wave.duration - w.elapsed),
     );
     const progressed: FiefState = {
-      ...result,
+      ...advanceManagement(result, step),
       elapsed: result.elapsed + step,
       aether: bounded(result.aether + step * aetherRate(result)),
-      monsterPressure: bounded(result.monsterPressure + step * pressureRate(result)),
-      patrolState:
-        result.patrolState.status === 'ON_PATROL'
-          ? { ...result.patrolState, elapsed: result.patrolState.elapsed + step }
-          : result.patrolState,
       raidState: raidBusy(result)
         ? { ...result.raidState, elapsed: result.raidState.elapsed + step }
         : result.raidState,
@@ -468,12 +406,21 @@ export function advanceFief(state: FiefState, seconds: number): FiefState {
 }
 export function setFacilityLevel(
   state: FiefState,
-  facility: 'city' | 'castle',
+  facility: 'city' | 'castle' | 'manor',
   level: number,
 ): FiefState {
   if (!Number.isInteger(level) || level < 1 || level > 5) return state;
-  const result = { ...state, [facility === 'city' ? 'cityLevel' : 'castleLevel']: level as Level };
-  return { ...result, garrison: Math.min(result.garrison, garrisonCapacity(result)) };
+  const result = { ...state, [facility + 'Level']: level as Level };
+  const reserved =
+    result.recruitmentState.status === 'RECRUITING' ? result.recruitmentState.count : 0;
+  if (result.soldiers.healthy + result.soldiers.wounded + reserved > garrisonCapacity(result))
+    return state;
+  return {
+    ...result,
+    activePolicies: result.activePolicies
+      .filter((id) => CONFIG.policies.definitions[id].minLevel <= level || facility !== 'manor')
+      .slice(0, policySlots(result)),
+  };
 }
 export function setTestMode(state: FiefState, mode: TestMode): FiefState {
   return {
@@ -493,9 +440,12 @@ export function castleReadiness(state: FiefState): 'ready' | 'strained' | 'insuf
 export function fiefWarnings(state: FiefState): string[] {
   const warnings: string[] = [];
   if (state.aether >= CONFIG.aether.danger) warnings.push('aetherWarning');
-  if (state.monsterPressure >= CONFIG.pressure.danger) warnings.push('pressureWarning');
+  if (state.monsterSaturation >= CONFIG.saturation.danger) warnings.push('saturationWarning');
   if (state.waveState.some((w) => !w.damageApplied)) warnings.push('waveApproaching');
-  if (state.security < CONFIG.pressure.rising) warnings.push('securityWarning');
+  if (state.security < CONFIG.territory.bands.caution) warnings.push('securityWarning');
+  if (state.soldiers.wounded > 0) warnings.push('woundedWarning');
+  if (availableGarrison(state) === 0) warnings.push('defenseWarning');
+  if (state.economyReport.shortfall > 0 || state.treasury === 0) warnings.push('fundingWarning');
   return warnings;
 }
 export const dungeonContents: Record<

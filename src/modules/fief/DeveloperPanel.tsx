@@ -5,7 +5,7 @@ import {
   changeCycle,
   devAdjustAether,
   gradeRange,
-  increaseMonsterPressure,
+  increaseMonsterSaturation,
   raidDungeon,
   setFacilityLevel,
   setTestMode,
@@ -83,6 +83,21 @@ export function DeveloperPanel({
             ))}
           </select>
         </label>
+        <label>
+          {t('manorLevel')}
+          <select
+            data-testid="fief-dev-manor-level"
+            aria-label={t('manorLevel')}
+            value={state.manorLevel}
+            onChange={(e) => setState((s) => setFacilityLevel(s, 'manor', Number(e.target.value)))}
+          >
+            {[1, 2, 3, 4, 5].map((l) => (
+              <option key={l} value={l}>
+                L{l}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <label>
         {t('testControls')}
@@ -122,10 +137,32 @@ export function DeveloperPanel({
         </button>
         <button
           type="button"
-          data-testid="fief-dev-pressure"
-          onClick={() => setState((s) => increaseMonsterPressure(s, CONFIG.dev.pressureStep))}
+          data-testid="fief-dev-saturation"
+          onClick={() => setState((s) => increaseMonsterSaturation(s, CONFIG.dev.saturationStep))}
         >
-          {t('devPressure')}
+          {t('devSaturation')}
+        </button>
+        <button
+          type="button"
+          data-testid="fief-dev-saturation-down"
+          onClick={() => setState((s) => increaseMonsterSaturation(s, -CONFIG.dev.saturationStep))}
+        >
+          {t('devSaturationDown')}
+        </button>
+        <button
+          type="button"
+          data-testid="fief-dev-states"
+          onClick={() =>
+            setState((s) => ({
+              ...s,
+              security: 30,
+              prosperity: 30,
+              publicSentiment: 30,
+              recoveryTimers: { security: 0, prosperity: 0, sentiment: 0 },
+            }))
+          }
+        >
+          {t('devStates')}
         </button>
         <button
           type="button"
@@ -151,6 +188,13 @@ export function DeveloperPanel({
           onClick={() => setState(triggerDungeonBreak)}
         >
           {t('devBreak')}
+        </button>
+        <button
+          type="button"
+          data-testid="fief-dev-empty-treasury"
+          onClick={() => setState((s) => ({ ...s, treasury: 0 }))}
+        >
+          {t('devEmptyTreasury')}
         </button>
         <button type="button" data-testid="fief-dev-reset" onClick={onReset}>
           {t('reset')}

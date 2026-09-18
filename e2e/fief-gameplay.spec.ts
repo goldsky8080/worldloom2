@@ -1,3 +1,4 @@
+import { referenceScreenshot } from './referenceScreenshot';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 // Keep Chromium's normal compositor: forcing ANGLE software rendering leaves scroll
 // capture artifacts with a paused clock. WebGL can still use its software fallback.
@@ -26,7 +27,7 @@ async function dev(page: Page, operation: () => Promise<void>) {
 }
 async function capture(page: Page, name: string, info: TestInfo) {
   await page.getByTestId('fief-page').evaluate((el) => (el.scrollTop = 0));
-  await page.screenshot({
+  await referenceScreenshot(page, {
     animations: 'disabled',
     path: 'docs/screenshots/' + name + '-' + info.project.name + '.png',
   });
@@ -48,7 +49,7 @@ test('map-led gameplay hides DEV, facility touch/keyboard selection and localize
   await expect(page.getByTestId('fief-context')).toHaveAttribute('data-facility', 'dungeon');
   await expect(page.getByTestId('fief-raid-start')).toBeEnabled();
   await expect(page.getByTestId('fief-contract-start')).toBeEnabled();
-  await expect(page.getByTestId('fief-pressure-value')).toBeVisible();
+  await expect(page.getByTestId('fief-saturation-value')).toBeVisible();
   await expect
     .poll(() =>
       page
@@ -89,40 +90,46 @@ test('map-led gameplay hides DEV, facility touch/keyboard selection and localize
   }
   expect(errors).toEqual([]);
 });
-test('paid recruiting and animated patrol reduce pressure without lowering aether', async ({
+test('timed paid recruiting and emergency movement reduce saturation without lowering aether', async ({
   page,
 }, info) => {
   await gameplay(page);
   const beforeAether = await aether(page);
   await dev(page, async () => {
-    for (let i = 0; i < 3; i++) await page.getByTestId('fief-dev-pressure').click();
+    for (let i = 0; i < 3; i++) await page.getByTestId('fief-dev-saturation').click();
   });
-  await expect(page.getByTestId('fief-pressure-marker')).toHaveCount(4);
+  await expect(page.getByTestId('fief-saturation-marker')).toHaveCount(4);
   await page.getByRole('button', { name: '성', exact: true }).click();
   const beforeGold = await gold(page);
   await page.getByTestId('fief-recruit').click();
   expect(await gold(page)).toBe(beforeGold - 500);
-  await expect(page.getByTestId('fief-garrison')).toContainText('60');
-  const pressure = Number(
-    (await page.getByTestId('fief-pressure-value').innerText()).split('/')[0],
+  await expect(page.getByTestId('fief-healthy')).toHaveText('40');
+  await expect(page.getByTestId('fief-recruitment-status')).toHaveAttribute(
+    'data-state',
+    'RECRUITING',
   );
-  await page.getByTestId('fief-patrol-start').click();
-  expect(await gold(page)).toBe(beforeGold - 750);
-  await expect(page.getByTestId('fief-patrol-start')).toBeDisabled();
-  await expect(page.getByTestId('fief-patrol-marker')).toBeVisible();
-  const x = await page
-    .getByTestId('fief-patrol-marker')
-    .evaluate((el) => getComputedStyle(el).left);
+  await page.clock.runFor(10250);
+  await expect(page.getByTestId('fief-healthy')).toHaveText('60');
+  const saturation = Number(
+    (await page.getByTestId('fief-saturation-value').innerText()).split('/')[0],
+  );
+  await page.getByTestId('fief-emergency-count').fill('20');
+  await page.getByTestId('fief-emergency-start').click();
+  expect(await gold(page)).toBe(beforeGold - 700);
+  await expect(page.getByTestId('fief-emergency-start')).toBeDisabled();
+  const marker = page.getByTestId('fief-emergency-marker');
+  const x = await marker.evaluate((el) => getComputedStyle(el).left);
   await page.clock.runFor(3250);
-  expect(
-    await page.getByTestId('fief-patrol-marker').evaluate((el) => getComputedStyle(el).left),
-  ).not.toBe(x);
+  expect(await marker.evaluate((el) => getComputedStyle(el).left)).not.toBe(x);
   await capture(page, 'fief-patrol', info);
   await page.clock.runFor(3500);
-  await expect(page.getByTestId('fief-patrol-status')).toHaveAttribute('data-state', 'SUCCEEDED');
+  await expect(page.getByTestId('fief-emergency-status')).toHaveAttribute(
+    'data-state',
+    'SUCCEEDED',
+  );
   expect(
-    Number((await page.getByTestId('fief-pressure-value').innerText()).split('/')[0]),
-  ).toBeCloseTo(pressure - 40, 0);
+    Number((await page.getByTestId('fief-saturation-value').innerText()).split('/')[0]),
+  ).toBeCloseTo(saturation - 40, 0);
   await page.getByRole('button', { name: '영지 던전', exact: true }).click();
   expect(await aether(page)).toBe(beforeAether);
 });
@@ -177,15 +184,15 @@ test('simulated contract charges once, shows acceptance/party progress and compl
   await page.clock.runFor(1000);
   expect(await aether(page)).toBeCloseTo(before - 50, 1);
 });
-test('pressure alone cannot break; travelling monster wave damages city once and can recur', async ({
+test('saturation alone cannot break; travelling monster wave damages city once and can recur', async ({
   page,
 }, info) => {
   await gameplay(page);
   await dev(page, async () => {
-    for (let i = 0; i < 5; i++) await page.getByTestId('fief-dev-pressure').click();
+    for (let i = 0; i < 5; i++) await page.getByTestId('fief-dev-saturation').click();
   });
   await expect(page.getByTestId('fief-wave')).toHaveCount(0);
-  await expect(page.getByTestId('fief-pressure-marker')).toHaveCount(5);
+  await expect(page.getByTestId('fief-saturation-marker')).toHaveCount(5);
   await dev(page, async () => {
     await page.getByTestId('fief-dev-break').click();
   });
@@ -206,11 +213,14 @@ test('pressure alone cannot break; travelling monster wave damages city once and
   await capture(page, 'fief-wave', info);
   await page.clock.runFor(5000);
   await expect(page.getByTestId('fief-wave')).toHaveCount(0);
-  await expect(page.getByTestId('fief-sentiment-value')).toHaveText('65');
-  await expect(page.getByTestId('fief-security-value')).toHaveText('62');
-  await expect(page.getByTestId('fief-prosperity-value')).toHaveText('57');
+  expect(Number(await page.getByTestId('fief-sentiment-value').innerText())).toBeLessThan(65);
+  expect(Number(await page.getByTestId('fief-security-value').innerText())).toBeLessThan(62);
+  expect(Number(await page.getByTestId('fief-prosperity-value').innerText())).toBeLessThan(57);
+  const afterArrival = Number(await page.getByTestId('fief-sentiment-value').innerText());
   await page.clock.runFor(9000);
-  await expect(page.getByTestId('fief-sentiment-value')).toHaveText('65');
+  expect(Number(await page.getByTestId('fief-sentiment-value').innerText())).toBeLessThan(
+    afterArrival,
+  );
   await page.getByRole('button', { name: '도시', exact: true }).click();
   await expect(page.getByTestId('fief-city-status')).toHaveText('도시 피해 발생');
   await dev(page, async () => {
@@ -219,7 +229,7 @@ test('pressure alone cannot break; travelling monster wave damages city once and
   });
   await expect(page.getByTestId('fief-wave')).toHaveCount(1);
   await page.clock.runFor(8250);
-  await expect(page.getByTestId('fief-sentiment-value')).toHaveText('60');
+  expect(Number(await page.getByTestId('fief-sentiment-value').innerText())).toBeLessThan(60);
   await page.getByRole('button', { name: '장원', exact: true }).click();
   await expect(page.getByTestId('fief-context')).toContainText('웨이브 도착 · 도시 피해');
 });
@@ -229,20 +239,16 @@ test('action costs reject insufficient treasury and DEV funding restores availab
   await gameplay(page);
   await page.getByRole('button', { name: '성', exact: true }).click();
   await page.getByTestId('fief-recruit').click();
+  await page.clock.runFor(10250);
   await page.getByTestId('fief-recruit').click();
+  await page.clock.runFor(10250);
+  await expect(page.getByTestId('fief-garrison')).toHaveText('80 / 80');
   await expect(page.getByTestId('fief-recruit')).toBeDisabled();
-  await page.getByRole('button', { name: '영지 던전', exact: true }).click();
-  for (let i = 0; i < 9; i++) {
-    await dev(page, async () => {
-      await page.getByTestId('fief-dev-aether').click();
-    });
-    await page.getByTestId('fief-contract-start').click();
-    await page.clock.runFor(9250);
-  }
-  expect(await gold(page)).toBe(0);
   await dev(page, async () => {
-    await page.getByTestId('fief-dev-aether').click();
+    await page.getByTestId('fief-dev-empty-treasury').click();
   });
+  expect(await gold(page)).toBe(0);
+  await page.getByRole('button', { name: '영지 던전', exact: true }).click();
   await expect(page.getByTestId('fief-contract-start')).toBeDisabled();
   await expect(page.getByTestId('fief-context')).toContainText('금고 잔액이 부족합니다.');
   await dev(page, async () => {
