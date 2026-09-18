@@ -1,3 +1,4 @@
+import { referenceScreenshot } from './referenceScreenshot';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 test.use({
   launchOptions: {
@@ -35,7 +36,7 @@ async function assign(page: Page, count: number) {
 }
 async function capture(page: Page, name: string, info: TestInfo) {
   await page.getByTestId('fief-page').evaluate((el) => (el.scrollTop = 0));
-  await page.screenshot({
+  await referenceScreenshot(page, {
     animations: 'disabled',
     path: 'docs/screenshots/fief-v03-' + name + '-' + info.project.name + '.png',
   });

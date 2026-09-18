@@ -81,7 +81,7 @@ it('recruits a chosen count after time and reserves healthy subsets for standing
       <FiefPage />
     </MemoryRouter>,
   );
-  fireEvent.click(screen.getByRole('button', { name: '성', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: '성' }));
   fireEvent.change(screen.getByTestId('fief-recruit-count'), { target: { value: '10' } });
   fireEvent.click(screen.getByTestId('fief-recruit'));
   expect(screen.getByTestId('fief-healthy')).toHaveTextContent('40');
@@ -102,7 +102,7 @@ it('tax and policies use cooldowns and slots without immediate state boosts', ()
       <FiefPage />
     </MemoryRouter>,
   );
-  fireEvent.click(screen.getByRole('button', { name: '장원', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: '장원' }));
   fireEvent.click(screen.getByTestId('fief-tax-high'));
   expect(screen.getByTestId('fief-tax-low')).toBeDisabled();
   expect(screen.getByTestId('fief-sentiment-value')).toHaveTextContent('70');

@@ -1,0 +1,127 @@
+.storage-panel {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.storage-panel label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.storage-panel select,
+.storage-panel input {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  color: var(--game-text);
+  background: var(--game-elevated);
+  border: 1px solid var(--game-border);
+  border-radius: 6px;
+}
+.storage-wallet,
+.storage-location {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.storage-location {
+  padding: 12px;
+  border: 1px solid var(--game-border);
+  border-radius: 8px;
+}
+.storage-location small {
+  width: 100%;
+}
+.storage-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.storage-tabs button {
+  flex: 1;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--game-border);
+  border-radius: 6px;
+  background: var(--game-elevated);
+  color: var(--game-text);
+  cursor: pointer;
+}
+.storage-tabs [aria-selected='true'] {
+  border-color: var(--game-primary);
+  color: var(--game-primary);
+}
+.storage-panel :focus-visible {
+  outline: 2px solid var(--game-primary);
+  outline-offset: 2px;
+}
+.storage-stock p {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.storage-batches,
+.storage-shipments {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.storage-batches article,
+.storage-shipments article {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--game-border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.storage-shipments progress {
+  width: 100%;
+  height: 10px;
+  accent-color: var(--game-primary);
+}
+.storage-action-form {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  gap: 10px;
+  margin: 16px 0;
+}
+.storage-panel h3 {
+  margin: 0 0 8px;
+}
+.storage-panel .button-row {
+  flex-wrap: wrap;
+}
+.storage-capacity {
+  margin: 12px 0;
+}
+.storage-capacity .game-button {
+  white-space: normal;
+}
+.storage-personal,
+.storage-notice {
+  padding: 10px;
+  border-left: 2px solid var(--game-primary);
+  background: var(--game-elevated);
+}
+.inventory-summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+@media (max-width: 480px) {
+  .storage-action-form {
+    grid-template-columns: 1fr;
+  }
+  .storage-tabs button {
+    font-size: 12px;
+  }
+  .storage-capacity .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

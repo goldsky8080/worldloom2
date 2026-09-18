@@ -1,3 +1,10 @@
+import {
+  storageInventorySchema,
+  storageStateSchema,
+  storageActionSchema,
+  depotNoticeSchema,
+  emptyStorage,
+} from '../storage/schema';
 import { WORLD_CONFIG } from '../world/worldConfig';
 import { z } from 'zod';
 export const CONTRACT_VERSION = '2.0' as const;
@@ -37,12 +44,7 @@ export const characterSchema = z.object({
   maxHp: z.number().positive(),
   roleKey: id,
 });
-export const inventorySchema = z.object({
-  gold: z.number().int().nonnegative(),
-  items: z.array(
-    z.object({ id, nameKey: id, assetId: id, quantity: z.number().int().nonnegative() }),
-  ),
-});
+export const inventorySchema = storageInventorySchema;
 export const charactersSchema = z
   .object({
     characterPool: z.array(characterSchema),
@@ -64,6 +66,7 @@ export const mailSchema = z.object({
   id,
   titleKey: id,
   bodyKey: id,
+  depotNotice: depotNoticeSchema.optional(),
   read: z.boolean(),
   claimed: z.boolean(),
   reward: z.number().int().nonnegative(),
@@ -129,6 +132,7 @@ export const snapshotSchema = z.object({
   mining: miningStateSchema,
   characters: charactersSchema,
   inventory: inventorySchema,
+  storage: storageStateSchema.default(emptyStorage),
   mail: z.array(mailSchema),
   notices: z.array(noticeSchema),
   chat: z.array(chatSchema),
@@ -140,6 +144,11 @@ const commandBase = {
   requestedAt: iso,
 };
 export const commandSchema = z.discriminatedUnion('commandType', [
+  z.object({
+    ...commandBase,
+    commandType: z.literal('STORAGE_ACTION'),
+    payload: storageActionSchema,
+  }),
   z.object({
     ...commandBase,
     commandType: z.literal('START_MINING'),
@@ -174,10 +183,16 @@ const eventBase = {
   occurredAt: iso,
 };
 export const eventSchema = z.discriminatedUnion('eventType', [
+  z.object({ ...eventBase, eventType: z.literal('STORAGE_UPDATED'), payload: storageStateSchema }),
   z.object({ ...eventBase, eventType: z.literal('WORLD_ENTITY_UPDATED'), payload: entitySchema }),
   z.object({ ...eventBase, eventType: z.literal('MOVEMENT_STARTED'), payload: entitySchema }),
   z.object({ ...eventBase, eventType: z.literal('MOVEMENT_COMPLETED'), payload: entitySchema }),
   z.object({ ...eventBase, eventType: z.literal('MINING_STARTED'), payload: miningActivitySchema }),
+  z.object({
+    ...eventBase,
+    eventType: z.literal('MINING_CANCELLED'),
+    payload: z.object({ commandId: z.string().uuid(), characterId: id }),
+  }),
   z.object({ ...eventBase, eventType: z.literal('MINING_COMPLETED'), payload: miningResultSchema }),
   z.object({ ...eventBase, eventType: z.literal('CHARACTER_UPDATED'), payload: charactersSchema }),
   z.object({ ...eventBase, eventType: z.literal('INVENTORY_UPDATED'), payload: inventorySchema }),

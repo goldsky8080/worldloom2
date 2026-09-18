@@ -1,3 +1,5 @@
+import { advanceStorage, cityAt, processStorageAction } from '../../core/storage/model';
+import { addItems, slotLimit, inventoryWeightLimit } from '../../core/storage/items';
 import { movementDurationMs } from '../../core/world/interaction';
 import { Atom } from '../../core/state/atom';
 import {
@@ -58,6 +60,7 @@ export class MockWorldServer {
     const half = this.latency.get() / 2;
     if (half) await new Promise<void>((resolve) => setTimeout(resolve, half));
     this.assertSession();
+    this.settleStorage();
     const snapshot = snapshotSchema.parse(
       structuredClone({
         ...this.state,
@@ -115,6 +118,11 @@ export class MockWorldServer {
           event.payload,
         ];
         break;
+      case 'MINING_CANCELLED':
+        this.state.mining.active = this.state.mining.active.filter(
+          (a) => a.commandId !== event.payload.commandId,
+        );
+        break;
       case 'MINING_COMPLETED':
         this.state.mining = {
           active: this.state.mining.active.filter((a) => a.commandId !== event.payload.commandId),
@@ -128,6 +136,9 @@ export class MockWorldServer {
         break;
       case 'CHARACTER_UPDATED':
         this.state.characters = event.payload;
+        break;
+      case 'STORAGE_UPDATED':
+        this.state.storage = event.payload;
         break;
       case 'INVENTORY_UPDATED':
         this.state.inventory = event.payload;
@@ -176,6 +187,23 @@ export class MockWorldServer {
     const player = this.state.world.find((e) => e.id === 'player-1' && e.type === 'player');
     if (!player || command.characterId !== this.state.characters.mainParty[0])
       return 'command.rejected';
+    if (command.commandType === 'STORAGE_ACTION') {
+      const personalExpansion =
+        command.payload.action === 'EXPAND' && command.payload.target === 'INVENTORY';
+      if (!personalExpansion && (this.activeActivity.has(player.id) || player.movement))
+        return 'command.busy';
+      try {
+        processStorageAction(this.state.storage, this.state.inventory, command.payload, {
+          cityId: cityAt(player)?.id,
+          ownerId: 'demo-account',
+          now: Date.now(),
+          commandId: command.commandId,
+        });
+      } catch (error) {
+        return error instanceof Error ? error.message : 'command.rejected';
+      }
+      return;
+    }
     const activity = this.activeActivity.get(player.id);
     const other = activity?.commandId !== command.commandId ? activity : undefined;
     if (command.commandType === 'MOVE') {
@@ -197,6 +225,17 @@ export class MockWorldServer {
       node.interaction.range
     )
       return 'mining.tooFar';
+    try {
+      addItems(
+        this.state.inventory.items,
+        'copper',
+        3,
+        slotLimit(this.state.inventory),
+        inventoryWeightLimit(this.state.inventory),
+      );
+    } catch (error) {
+      return error instanceof Error ? error.message : 'command.rejected';
+    }
   }
   async command(input: GameCommand): Promise<CommandReceipt> {
     const parsed = commandSchema.safeParse(input);
@@ -217,6 +256,7 @@ export class MockWorldServer {
       if (cached.serialized !== serialized) throw new Error('command.rejected');
       return structuredClone(cached.receipt);
     }
+    this.settleStorage();
     const errorKey = boundsError ? 'world.outOfBounds' : this.validationError(command);
     const receipt: CommandReceipt = {
       contractVersion: CONTRACT_VERSION,
@@ -241,9 +281,34 @@ export class MockWorldServer {
       this.activeActivity.delete('player-1');
   }
   private execute(command: GameCommand) {
+    this.settleStorage();
     const errorKey = this.validationError(command);
     if (errorKey) {
       this.fail(command, errorKey);
+      return;
+    }
+    if (command.commandType === 'STORAGE_ACTION') {
+      try {
+        const result = processStorageAction(
+          this.state.storage,
+          this.state.inventory,
+          command.payload,
+          {
+            cityId: cityAt(this.state.world.find((e) => e.id === 'player-1'))?.id,
+            ownerId: 'demo-account',
+            now: Date.now(),
+            commandId: command.commandId,
+          },
+        );
+        this.publish({ eventType: 'INVENTORY_UPDATED', payload: result.inventory });
+        this.publish({ eventType: 'STORAGE_UPDATED', payload: result.storage });
+        this.publish({
+          eventType: 'COMMAND_STATUS',
+          payload: { commandId: command.commandId, status: 'SUCCEEDED' },
+        });
+      } catch (error) {
+        this.fail(command, error instanceof Error ? error.message : 'command.rejected');
+      }
       return;
     }
     const now = Date.now(),
@@ -297,13 +362,28 @@ export class MockWorldServer {
     this.schedule(() => {
       if (command.commandType === 'START_MINING') {
         const rewards = [{ itemId: 'copper', quantity: 3 }];
+        let items: GameSnapshot['inventory']['items'];
+        try {
+          items = addItems(
+            this.state.inventory.items,
+            'copper',
+            3,
+            slotLimit(this.state.inventory),
+            inventoryWeightLimit(this.state.inventory),
+          );
+        } catch (error) {
+          this.publish({
+            eventType: 'MINING_CANCELLED',
+            payload: { commandId: command.commandId, characterId: command.characterId },
+          });
+          this.fail(command, error instanceof Error ? error.message : 'command.rejected');
+          return;
+        }
         this.publish({
           eventType: 'INVENTORY_UPDATED',
           payload: {
             ...this.state.inventory,
-            items: this.state.inventory.items.map((i) =>
-              i.id === 'copper' ? { ...i, quantity: i.quantity + 3 } : i,
-            ),
+            items,
           },
         });
         this.release(command);
@@ -382,7 +462,27 @@ export class MockWorldServer {
       payload: { titleKey, kind: 'success', commandId },
     });
   }
+  private settleStorage() {
+    const result = advanceStorage(this.state.storage, Date.now());
+    if (JSON.stringify(result.storage) !== JSON.stringify(this.state.storage))
+      this.publish({ eventType: 'STORAGE_UPDATED', payload: result.storage });
+    for (const notice of result.notices)
+      this.publish({
+        eventType: 'MAIL_RECEIVED',
+        payload: {
+          id: 'depot:' + notice.batchId + ':' + notice.stage,
+          titleKey: 'storage.mail.' + notice.stage,
+          bodyKey: 'storage.mail.body',
+          depotNotice: notice,
+          read: false,
+          claimed: true,
+          reward: 0,
+          expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+        },
+      });
+  }
   private advanceWorld() {
+    this.settleStorage();
     // Ambient creatures/caravans patrol. The player moves only on a MOVE command.
     this.state.world
       .filter((e) => ['monster-1', 'transport-1'].includes(e.id))

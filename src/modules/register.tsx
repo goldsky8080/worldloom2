@@ -2,6 +2,7 @@ import { moduleRegistry, type GameMenuItem, type PanelDefinition } from './regis
 import { frameworkAssets } from '../assets/manifest/framework';
 import { assetManager } from '../services/assets/AssetManager';
 import { CharacterPanel } from './character/CharacterPanel';
+import { StoragePanel } from './storage/StoragePanel';
 import { InventoryPanel } from './inventory/InventoryPanel';
 import { EntityPanel } from './world/EntityPanel';
 import { MailPanel } from './mail/MailPanel';
@@ -67,6 +68,13 @@ export function registerModules() {
     localizationNamespaces: ['inventory'],
     panels: [panel('inventory', InventoryPanel)],
     menuItems: [menu('economy', 'inventory', 10)],
+  });
+  moduleRegistry.register({
+    id: 'storage',
+    version: '0.4.0',
+    localizationNamespaces: ['storage'],
+    panels: [panel('storage', StoragePanel)],
+    menuItems: [menu('economy', 'storage', 30, { iconAssetId: 'framework.menu.market' })],
   });
   moduleRegistry.register({
     id: 'market',

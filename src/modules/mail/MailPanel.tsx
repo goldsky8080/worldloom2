@@ -1,3 +1,6 @@
+import { publicCity } from '../../core/storage/model';
+import { itemDefinition } from '../../core/storage/items';
+import { panelManager } from '../../shell/panels/PanelManager';
 import { useState } from 'react';
 import { runtime, socialGateway } from '../../app/bootstrap/services';
 import { useAtom } from '../../core/state/useAtom';
@@ -72,8 +75,35 @@ export function MailPanel() {
       {entry && (
         <article className="mail-detail">
           <h3>{t(entry.titleKey)}</h3>
-          <p>{t(entry.bodyKey)}</p>
-          <CurrencyDisplay value={entry.reward} />
+          <p>
+            {entry.depotNotice
+              ? t(entry.bodyKey, {
+                  city: t(publicCity(entry.depotNotice.cityId).nameKey),
+                  item: t(itemDefinition(entry.depotNotice.itemId).name),
+                  count: entry.depotNotice.quantity,
+                })
+              : t(entry.bodyKey)}
+          </p>
+          {entry.depotNotice ? (
+            <>
+              <p>
+                {t('storage.expires')}:{' '}
+                {new Intl.DateTimeFormat(language, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                }).format(Date.parse(entry.depotNotice.expiresAt))}
+              </p>
+              <GameButton
+                onClick={() =>
+                  panelManager.open('storage', { payload: { cityId: entry.depotNotice!.cityId } })
+                }
+              >
+                {t('storage.openDepot')}
+              </GameButton>
+            </>
+          ) : (
+            <CurrencyDisplay value={entry.reward} />
+          )}
           <p className="muted">
             {t('mail.expires')} ·{' '}
             {new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(
@@ -81,7 +111,7 @@ export function MailPanel() {
             )}
           </p>
           <div className="button-row">
-            {entry.claimed ? (
+            {entry.depotNotice ? null : entry.claimed ? (
               <StatusBadge kind="success">{t('mail.claimed')}</StatusBadge>
             ) : Date.parse(entry.expiresAt) <= now ? (
               <StatusBadge kind="danger">{t('mail.expired')}</StatusBadge>

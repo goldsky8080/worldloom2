@@ -1,3 +1,5 @@
+import { createStorageFixture } from '../../core/storage/model';
+import { STORAGE_CONFIG, PUBLIC_CITIES } from '../../core/storage/config';
 import { WORLD_CONFIG } from '../../core/world/worldConfig';
 import { CONTRACT_VERSION, type GameSnapshot } from '../../core/contracts';
 export function createFixture(now = Date.now()): GameSnapshot {
@@ -77,7 +79,11 @@ export function createFixture(now = Date.now()): GameSnapshot {
           durationMs: WORLD_CONFIG.interaction.miningDurationMs,
         },
       })),
-      entity('npc-1', 'npc', 870, 980),
+      { ...entity('npc-1', 'npc', 870, 980), displayNameKey: 'storage.city.dawn' },
+      {
+        ...entity('public-city-harbor', 'npc', 1700, 1050),
+        displayNameKey: PUBLIC_CITIES[1].nameKey,
+      },
       ...Array.from({ length: 38 }, (_, i) =>
         entity(
           'ambient-' + i,
@@ -92,8 +98,13 @@ export function createFixture(now = Date.now()): GameSnapshot {
       activeRoster: pool.slice(0, 5).map((c) => c.id),
       mainParty: pool.slice(0, 3).map((c) => c.id),
     },
+    storage: createStorageFixture(),
     inventory: {
       gold: 1250,
+      gem: 0,
+      goldExpansion: 0,
+      premiumExpansion: 0,
+      weightLimit: STORAGE_CONFIG.personalWeightLimit,
       items: [
         { id: 'copper', nameKey: 'inventory.copper', assetId: 'item.copper', quantity: 12 },
         { id: 'ration', nameKey: 'inventory.ration', assetId: 'item.ration', quantity: 8 },

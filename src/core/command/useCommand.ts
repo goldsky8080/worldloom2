@@ -27,7 +27,7 @@ export function useCommand() {
       await runtime.send(command);
     } catch (error) {
       const key = error instanceof Error ? error.message : '';
-      setErrorKey(/^(auth|common|command|world|mining)\./.test(key) ? key : 'common.error');
+      setErrorKey(/^(auth|common|command|world|mining|storage)\./.test(key) ? key : 'common.error');
     } finally {
       setSending(false);
       lock.current = false;

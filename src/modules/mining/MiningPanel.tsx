@@ -1,3 +1,4 @@
+import { itemQuantity } from '../../core/storage/items';
 import type { PanelProps } from '../registry';
 import { useAtom } from '../../core/state/useAtom';
 import { runtime } from '../../app/bootstrap/services';
@@ -65,7 +66,7 @@ export function MiningPanel({ payload }: PanelProps) {
         </div>
         <div>
           <dt>{t('inventory.copper')}</dt>
-          <dd>{inventory.items.find((i) => i.id === 'copper')?.quantity ?? 0}</dd>
+          <dd>{itemQuantity(inventory.items, 'copper')}</dd>
         </div>
       </dl>
       {action.moving && action.player?.movement && (

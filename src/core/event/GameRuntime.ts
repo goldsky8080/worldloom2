@@ -215,6 +215,12 @@ export class GameRuntime {
           ],
         }));
         break;
+      case 'MINING_CANCELLED':
+        this.cache.mining.update((s) => ({
+          ...s,
+          active: s.active.filter((a) => a.commandId !== event.payload.commandId),
+        }));
+        break;
       case 'MINING_COMPLETED':
         this.cache.mining.update((state) => ({
           active: state.active.filter((a) => a.commandId !== event.payload.commandId),
@@ -226,6 +232,9 @@ export class GameRuntime {
         break;
       case 'CHARACTER_UPDATED':
         this.cache.characters.set(event.payload);
+        break;
+      case 'STORAGE_UPDATED':
+        this.cache.storage.set(event.payload);
         break;
       case 'INVENTORY_UPDATED':
         this.cache.inventory.set(event.payload);
